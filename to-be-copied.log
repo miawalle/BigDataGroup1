@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.11.2)  3 NOV 2019 15:11
+=======
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.11.2)  3 NOV 2019 15:37
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -808,8 +812,12 @@ G,.JBIG2,.JB2,.eps]
 df-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
-))
+)) (./to-be-copied.toc)
+\tf@toc=\write4
+\openout4 = `to-be-copied.toc'.
+
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
+<<<<<<< HEAD
 21.
 (c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
@@ -827,136 +835,212 @@ File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
 121.
 (c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
+=======
+22.
+(c:/Users/chris/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ot1lmr.fd
+File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
+22.
+(c:/Users/chris/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
+File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
+122.
+(c:/Users/chris/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omslmsy.fd
+File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
+122.
+(c:/Users/chris/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 121.
+(Font)              <10> on input line 122.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 121.
+(Font)              <7> on input line 122.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 121.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 121
+(Font)              <5> on input line 122.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 122
 .
 (c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 121
+LaTeX Font Info:    Trying to load font information for U+msb on input line 122
 .
 (c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-<"to-be-copied_files/figure-latex/""unnamed-chunk-2-1".pdf, id=36, 469.755pt x 
+<"to-be-copied_files/figure-latex/""unnamed-chunk-2-1".pdf, id=39, 469.755pt x 
 325.215pt>
 File: "to-be-copied_files/figure-latex/""unnamed-chunk-2-1".pdf Graphic file (t
 ype pdf)
 <use "to-be-copied_files/figure-latex/""unnamed-chunk-2-1".pdf>
 Package pdftex.def Info: "to-be-copied_files/figure-latex/""unnamed-chunk-2-1".
-pdf  used on input line 154.
+pdf  used on input line 155.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [1
 
+<<<<<<< HEAD
 {c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
 x.map}pdfTeX warning (ext4): destination with the same identifier (name{table.1
 }) has been already used, duplicate ignored
+=======
+{c:/Users/chris/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
+x.map}] [2pdfTeX warning (ext4): destination with the same identifier (name{tab
+le.1}) has been already used, duplicate ignored
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.156 F
+l.157 F
        actor variables: Then we recategorize som of the factor variables.]
-<"""density_pre_cleaning".jpeg, id=49, 1011.78pt x 1011.78pt>
+<"""density_pre_cleaning".jpeg, id=57, 1011.78pt x 1011.78pt>
 File: """density_pre_cleaning".jpeg Graphic file (type jpg)
 <use """density_pre_cleaning".jpeg>
-Package pdftex.def Info: """density_pre_cleaning".jpeg  used on input line 283.
+Package pdftex.def Info: """density_pre_cleaning".jpeg  used on input line 284.
 
 (pdftex.def)             Requested size: 469.76266pt x 469.76266pt.
-[2 <./to-be-copied_files/figure-latex/unnamed-chunk-2-1.pdf>]
+[3 <./to-be-copied_files/figure-latex/unnamed-chunk-2-1.pdf>]
 Overfull \vbox (436.22177pt too high) has occurred while \output is active []
 
-[3pdfTeX warning (ext4): destination with the same identifier (name{table.2}) h
+[4pdfTeX warning (ext4): destination with the same identifier (name{table.2}) h
 as been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.286 
+l.287 
        <./density_pre_cleaning.jpeg>]
-<"""boxplot_pre_cleaning".jpeg, id=65, 1011.78pt x 1011.78pt>
+<"""boxplot_pre_cleaning".jpeg, id=73, 1011.78pt x 1011.78pt>
 File: """boxplot_pre_cleaning".jpeg Graphic file (type jpg)
 <use """boxplot_pre_cleaning".jpeg>
+<<<<<<< HEAD
 Package pdftex.def Info: """boxplot_pre_cleaning".jpeg  used on input line 287.
+=======
+Package pdftex.def Info: """boxplot_pre_cleaning".jpeg  used on input line 290.
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 
 (pdftex.def)             Requested size: 469.76266pt x 469.76266pt.
-[4 <./boxplot_pre_cleaning.jpeg>]
-<"""imputation_mean".jpeg, id=72, 1011.78pt x 1011.78pt>
+[5 <./boxplot_pre_cleaning.jpeg>]
+<"""imputation_mean".jpeg, id=80, 1011.78pt x 1011.78pt>
 File: """imputation_mean".jpeg Graphic file (type jpg)
 <use """imputation_mean".jpeg>
+<<<<<<< HEAD
 Package pdftex.def Info: """imputation_mean".jpeg  used on input line 312.
+=======
+Package pdftex.def Info: """imputation_mean".jpeg  used on input line 315.
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 (pdftex.def)             Requested size: 469.76266pt x 469.76266pt.
-<"""imputation_pmm".jpeg, id=73, 1011.78pt x 1011.78pt>
+<"""imputation_pmm".jpeg, id=81, 1011.78pt x 1011.78pt>
 File: """imputation_pmm".jpeg Graphic file (type jpg)
 <use """imputation_pmm".jpeg>
+<<<<<<< HEAD
 Package pdftex.def Info: """imputation_pmm".jpeg  used on input line 313.
+=======
+Package pdftex.def Info: """imputation_pmm".jpeg  used on input line 316.
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 (pdftex.def)             Requested size: 469.76266pt x 469.76266pt.
-[5 <./imputation_mean.jpeg>] [6 <./imputation_pmm.jpeg>]
-<"""boxplot_post_cleaning".jpeg, id=84, 1011.78pt x 1011.78pt>
+[6 <./imputation_mean.jpeg>] [7 <./imputation_pmm.jpeg>]
+<"""boxplot_post_cleaning".jpeg, id=93, 1011.78pt x 1011.78pt>
 File: """boxplot_post_cleaning".jpeg Graphic file (type jpg)
 <use """boxplot_post_cleaning".jpeg>
+<<<<<<< HEAD
 Package pdftex.def Info: """boxplot_post_cleaning".jpeg  used on input line 366
+=======
+Package pdftex.def Info: """boxplot_post_cleaning".jpeg  used on input line 369
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 .
 (pdftex.def)             Requested size: 469.76266pt x 469.76266pt.
-<"""density_post_cleaning".jpeg, id=85, 1011.78pt x 1011.78pt>
+<"""density_post_cleaning".jpeg, id=94, 1011.78pt x 1011.78pt>
 File: """density_post_cleaning".jpeg Graphic file (type jpg)
 <use """density_post_cleaning".jpeg>
+<<<<<<< HEAD
 Package pdftex.def Info: """density_post_cleaning".jpeg  used on input line 367
+=======
+Package pdftex.def Info: """density_post_cleaning".jpeg  used on input line 370
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 .
 (pdftex.def)             Requested size: 469.76266pt x 469.76266pt.
-[7 <./boxplot_post_cleaning.jpeg>] [8 <./density_post_cleaning.jpeg>]
+[8 <./boxplot_post_cleaning.jpeg>] [9 <./density_post_cleaning.jpeg>]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 4
+<<<<<<< HEAD
 10.
 (c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 Underfull \hbox (badness 3769) in paragraph at lines 423--445
+=======
+13.
+(c:/Users/chris/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
+File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+Underfull \hbox (badness 3769) in paragraph at lines 426--448
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 \T1/lmr/m/it/10 2.910 0.003619  \T1/lmr/bx/it/10 un-paid_debt_collection1 1.432
 3496 0.0776961 18.435 < 2e-16  \T1/lmr/m/n/10 ad-
  []
 
 
+<<<<<<< HEAD
 Underfull \hbox (badness 2781) in paragraph at lines 423--445
+=======
+Underfull \hbox (badness 2781) in paragraph at lines 426--448
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 \T1/lmr/m/n/10 verse_audit_opinion1 1.2293424 0.0774344 15.876 < 2e-16  \T1/lmr
 /bx/it/10 amount_unpaid_debt 0.0012354
  []
 
 
+<<<<<<< HEAD
 Underfull \hbox (badness 1960) in paragraph at lines 423--445
+=======
+Underfull \hbox (badness 1960) in paragraph at lines 426--448
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 \T1/lmr/bx/n/10 payment_reminders1 0.6614652 0.0895456 7.387 1.50e-13  \T1/lmr/
 m/it/10 pay-ment_reminders2 1.7178734
  []
 
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 4
+<<<<<<< HEAD
 48.
 (c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
+=======
+51.
+(c:/Users/chris/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-<"to-be-copied_files/figure-latex/""unnamed-chunk-21-1".pdf, id=98, 469.755pt x
- 325.215pt>
+<"to-be-copied_files/figure-latex/""unnamed-chunk-21-1".pdf, id=106, 469.755pt 
+x 325.215pt>
 File: "to-be-copied_files/figure-latex/""unnamed-chunk-21-1".pdf Graphic file (
 type pdf)
 <use "to-be-copied_files/figure-latex/""unnamed-chunk-21-1".pdf>
 Package pdftex.def Info: "to-be-copied_files/figure-latex/""unnamed-chunk-21-1"
+<<<<<<< HEAD
 .pdf  used on input line 456.
+=======
+.pdf  used on input line 459.
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[9]
+[10]
 LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
+<<<<<<< HEAD
 493.
 (c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
+=======
+496.
+(c:/Users/chris/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [10 <./to-be-copied_files/figure-latex/unnamed-chunk-21-1.pdf>]
-<"to-be-copied_files/figure-latex/""unnamed-chunk-25-1".pdf, id=117, 469.755pt 
+) [11 <./to-be-copied_files/figure-latex/unnamed-chunk-21-1.pdf>]
+<"to-be-copied_files/figure-latex/""unnamed-chunk-25-1".pdf, id=124, 469.755pt 
 x 325.215pt>
 File: "to-be-copied_files/figure-latex/""unnamed-chunk-25-1".pdf Graphic file (
 type pdf)
 <use "to-be-copied_files/figure-latex/""unnamed-chunk-25-1".pdf>
 Package pdftex.def Info: "to-be-copied_files/figure-latex/""unnamed-chunk-25-1"
+<<<<<<< HEAD
 .pdf  used on input line 504.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
@@ -971,19 +1055,39 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 606.
 (./to-be-copied.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 606.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 606.
+=======
+.pdf  used on input line 507.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 507--509
+[][]
+ []
+
+[12 <./to-be-copied_files/figure-latex/unnamed-chunk-25-1.pdf>] [13]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 609.
+[14]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 609.
+(./to-be-copied.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 609.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 609.
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 Package rerunfilecheck Info: File `to-be-copied.out' has not changed.
-(rerunfilecheck)             Checksum: 4804B5EB206302D9A0C4244ED4C82D48;1135.
+(rerunfilecheck)             Checksum: 953081E40E35EF38D03D6812B67A8E31;1038.
 
 LaTeX Warning: There were multiply-defined labels.
 
+<<<<<<< HEAD
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 606.
+=======
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 609.
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
  ) 
 Here is how much of TeX's memory you used:
- 12546 strings out of 494111
- 178860 string characters out of 6172312
- 264505 words of memory out of 5000000
- 16423 multiletter control sequences out of 15000+600000
- 47281 words of font info for 44 fonts, out of 8000000 for 9000
+ 12547 strings out of 494111
+ 178866 string characters out of 6172312
+ 264486 words of memory out of 5000000
+ 16421 multiletter control sequences out of 15000+600000
+ 41284 words of font info for 42 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  31i,10n,37p,237b,442s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/Users/miawa/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-math
@@ -1002,10 +1106,14 @@ nyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb><c:/Users/miawa/AppData/Roamin
 g/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/miawa/AppData/R
 oaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/miawa/AppD
 ata/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
+<<<<<<< HEAD
 Output written on to-be-copied.pdf (13 pages, 370372 bytes).
+=======
+Output written on to-be-copied.pdf (14 pages, 378355 bytes).
+>>>>>>> 8c4263b311cf497805c0d4ad887b7610b0866a38
 PDF statistics:
- 196 PDF objects out of 1000 (max. 8388607)
- 151 compressed objects within 2 object streams
+ 203 PDF objects out of 1000 (max. 8388607)
+ 157 compressed objects within 2 object streams
  33 named destinations out of 1000 (max. 500000)
- 110 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 102 words of extra memory for PDF output out of 10000 (max. 10000000)
 
