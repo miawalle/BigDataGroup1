@@ -455,7 +455,6 @@ model_glm <- train(default ~.,
                    method = "glm",
                    trControl = ctrl)
 
-# saveRDS(model_glm, file = "glm.Rdata")
 
 ```
 Comments:
@@ -468,7 +467,6 @@ The plot below shows the variable importance of the independent variables in the
 - Comments: what variables perform well
 
 ```{r}
-# model_glm <- readRDS("glm.Rdata")
 
 summary(model_glm)
 
