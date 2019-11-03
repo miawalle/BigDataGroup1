@@ -153,8 +153,6 @@ include_graphics("density_pre_cleaning.jpeg")
 ```
 The figures below show the distribution after replacing xxx with NA. As shown, we still have an issue with outliers.
 
-(Show summary table here??)
-
 
 ```{r, fig.asp=1, fig.width = 14, eval= FALSE}
 
@@ -167,7 +165,9 @@ df_corp %>%
   geom_boxplot(show.legend = FALSE) +
   facet_wrap(~ metric, scales = "free")
 
-# We definitly need to do something about those outliers, only gross_operating_inc_perc and age_of_company looks to be okay.
+# We definitly need to do something about those outliers, only gross_operating_inc_perc and age_of_company seems to be okay.
+
+#Mia: These figures might be a bit excessive?
 
 
 ```
