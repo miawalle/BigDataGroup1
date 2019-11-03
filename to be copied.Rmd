@@ -1,3 +1,4 @@
+
 ---
 title: "Habits"
 output:
@@ -150,6 +151,8 @@ df_corp %>%
    facet_wrap(~ metric, scales = "free")
 
 ```
+
+
 ```{r, out.width='100%'}
 
 include_graphics("density_pre_cleaning.jpeg")
@@ -450,7 +453,7 @@ Summary statistics are presented below.
 
 
 
-```{r}
+```{r, eval = FALSE}
 
 set.seed(1)
 
@@ -470,15 +473,15 @@ Comments:
 The plot below shows the variable importance of the independent variables in the glm model. 
 - Comments: what variables perform well
 
-```{r}
+```{r, eval=FALSE}
 
-summary(model_glm)
+stargazer(model_glm)
 
 plot(varImp(model_glm))
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
@@ -580,13 +583,13 @@ print(result.coords)#to get threshold and accuracy
 ```{r, eval = FALSE}
 #Model 3: Xgboost
 
-xgb_grid <- expand.grid(nrounds = c(250,300,350),
-                        max_depth = c(5,6,7), 
-                        min_child_weight = c(1,2),
+xgb_grid <- expand.grid(nrounds = 250,
+                        max_depth = 7, 
+                        min_child_weight = 1,
                         subsample = 1,
-                        gamma = c(0,.1,.2),
+                        gamma = .2,
                         colsample_bytree = 0.8,
-                        eta = c(.2,.3,.4))
+                        eta = .2)
 
 set.seed(1)
 
@@ -603,16 +606,15 @@ model_xgb <- caret::train(default ~ .,
 
 ```
 
+```{r, fig.asp=1, fig.width = 14}
 model_xgb <- readRDS("xgb.Rdata")
-
-model_xgb
 
 plot(varImp(model_xgb))
 
 xgb_pred <- data.frame(actual = test_data$default,
                       predict(model_xgb, newdata = test_data, type = "prob"))
 
-rf_pred$predict <- ifelse(xgb_pred$X1 > 0.5, 1, 0)
+xgb_pred$predict <- ifelse(xgb_pred$X1 > 0.5, 1, 0)
 xgb_pred$predict <- as.factor(xgb_pred$predict)
 
 cm_xgb <- confusionMatrix(xgb_pred$predict, test_data$default)
@@ -628,9 +630,23 @@ plot(result.roc, print.thres="best", print.thres.best.method="closest.topleft")
 
 result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c("threshold", "accuracy"))
 print(result.coords)#to get threshold and accuracy
+```
 
+```{r, echo=FALSE, out.width='100%'}
 
-############################# Look at at difference all together ##########################
+include_graphics('xgb_tuning_plot.jpeg')
+
+```
+
+Accuracy and Kappa
+These are the default metrics used to evaluate algorithms on binary and multi-class classification datasets in caret.
+
+Accuracy is the percentage of correctly classifies instances out of all instances. It is more useful on a binary classification than multi-class classification problems because it can be less clear exactly how the accuracy breaks down across those classes (e.g. you need to go deeper with a confusion matrix). Learn more about Accuracy here.
+
+Kappa or Cohen’s Kappa is like classification accuracy, except that it is normalized at the baseline of random chance on your dataset. It is a more useful measure to use on problems that have an imbalance in the classes (e.g. 70-30 split for classes 0 and 1 and you can achieve 70% accuracy by predicting all instances are for class 0). Learn more about Kappa here.
+
+```{r}
+
 
 # Look at the performance
 
@@ -654,4 +670,7 @@ splom(resampling)
 xyplot(resampling, models=c("rf", "xgb"))
 
 summary(resampling)
+
+```
+
 
