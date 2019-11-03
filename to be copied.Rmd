@@ -560,7 +560,7 @@ How well the model performs relative to glm
 Accuracy, specificity and sensitivity etc.
 
 
-```{r, eval = FALSE}
+```{r}
 
 # ROC curve rf
 
@@ -658,18 +658,11 @@ resampling <- resamples(models)
 
 bwplot(resampling)
 
-# density plots of accuracy
+comp_table <- summary(resampling) 
+  xtable(comp_table)
+  
+stargazer(comp_table$statistics)
 
-scales <- list(x=list(relation="free"), y=list(relation="free"))
-densityplot(resampling, scales=scales, pch = "|", allow.multiple = TRUE)
-
-# Other snacks for comparing 
-
-splom(resampling)
-
-xyplot(resampling, models=c("rf", "xgb"))
-
-summary(resampling)
 
 ```
 
