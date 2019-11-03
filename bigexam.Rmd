@@ -69,6 +69,9 @@ We also notice that the variable default, which will be the dependent variable i
 
 ```{r}
 
+
+df_corp$default <- as.factor(df_corp$default) 
+
 df_corp %>% 
   ggplot(aes(x = default, fill = default)) +
   geom_bar()
@@ -77,8 +80,6 @@ df_corp %>%
 
 
 ```{r, include = FALSE}
-
-df_corp$default <- as.factor(df_corp$default) 
 
 # Look at the distribution and recategorize the factor classes
 
@@ -139,23 +140,6 @@ stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE)
 
 ```
 
-```{r, fig.asp=1, fig.width = 14, eval= FALSE, include=FALSE}
-
-df_corp %>% 
-   select_if(is.numeric) %>% 
-   gather(metric, value) %>% 
-   ggplot(aes(value, fill = metric))+
-   geom_density(show.legend = FALSE) +
-   facet_wrap(~ metric, scales = "free")
-
-```
-
-
-```{r, out.width='100%'}
-
-include_graphics("density_pre_cleaning.jpeg")
-
-```
 
 ```{r, fig.asp=1, fig.width = 14, eval= FALSE, include=FALSE}
 
@@ -173,12 +157,11 @@ df_corp %>%
 
 ```
 
-```{r, out.width='100%', include = FALSE}
+```{r, out.width='100%', include = T}
 
 include_graphics("boxplot_pre_cleaning.jpeg")
 
 ```
-
 
 ```{r}
 
@@ -216,16 +199,11 @@ df_corp$total_assets <- remove_outliers_na(df_corp$total_assets)
 df_corp$revenue <- remove_outliers_na(df_corp$revenue)
 df_corp$amount_unpaid_debt <- remove_outliers_na(df_corp$amount_unpaid_debt)
 
-```
-
-
-```{r, include = FALSE}
 
 df_corp <- df_corp %>% 
   select(-equity_ratio_stability) # Removed due to collinearity and if look at the earlier plots it make sense.
 
 ```
-
 
 ```{r,fig.asp=1, fig.width = 14, eval=FALSE}
 
@@ -237,27 +215,13 @@ saveRDS(temp_imputed1, file = "imputeMEAN.Rdata")
 
 saveRDS(temp_imputed2, file = "impute.Rdata") 
 
-
 densityplot(temp_imputed1, drop.unused.levels = TRUE)
 
 densityplot(temp_imputed2, drop.unused.levels = TRUE)
 
 # Running the imputations and generating density plots of the imputed values is higly time consuming. Therefore, we upload the saved files and  plots instead. 
+# See appendix for plots. 
 ```
-
-
-```{r, echo=FALSE, out.width='100%', include = FALSE}
-
-temp_imputed1 <- readRDS(file = "imputeMEAN.Rdata")
-temp_imputed2 <- readRDS(file = "impute.Rdata")
-
-### load images 
-
-include_graphics('imputation_mean.jpeg')
-include_graphics('imputation_pmm.jpeg')
-
-```
-
 
 ```{r, include = FALSE, include=FALSE}
 
@@ -273,7 +237,6 @@ xtable(rbind(Orginal, Imputed))
 df_cleaned <- complete_imputed
 
 ```
-
 
 ```{r, include = FALSE}
 
@@ -292,7 +255,6 @@ xtable(table2)
 
 ```
  
-
 ```{r, fig.asp=1, fig.width = 14, eval=FALSE}
 
 # Looking at the distribution again
@@ -320,6 +282,8 @@ Figure \ref{fig:boxpot_post_cleaning} and \ref{fig:density_post_cleaning} contai
 
 ```{r, echo=FALSE, out.width='100%'}
 
+
+
 include_graphics('boxplot_post_cleaning.jpeg')
 include_graphics('density_post_cleaning.jpeg')
 
@@ -332,9 +296,11 @@ After cleaning the data set, we are left with xx missing values. As these accoun
 
 ### Preparations
 
+
+XXX Blalala the data is split into a training set and a test set.
+
 Prior to training our prediction models, we run the data set through a function which detects whether any of the variables correlate. It turns out that the variables \textit{total assets}, \textit{revenue}, \textit{industry} and \textit{paid debt collection} correlate with one or more of the other variables. To avoid multicollinearity, these variables are removed from the data set.  
 
-Further, the data is split into a training set and a test set.
 
 
 
@@ -373,12 +339,11 @@ corr_check <- function(data, threshold){
   }
 }
 
-# corr_check(cor_df, 0.7)
+
+cor_mat <- corr_check(cor_df, 0.7)
 
 train_data <- train_data %>% 
   select(-operating_margin, -liquidity_ratio_1, -EBITDA_margin, -equity)
-
-# Secondly we check the correlation with the cateorized variables
 
 ```
 
@@ -401,10 +366,6 @@ xtable(rbind(`Train defaults`,`Test defaults`))
 train_data <- train_data %>% 
   select(-total_assets, -revenue, -industry, -paid_debt_collection)
 
-# We need to handel the unbalanced dataset when modeling!
-
-# Undersampling - Could have used oversampling, rose or smote. But took to mutch time to manage.
-
 ctrl <- trainControl(method = "repeatedcv", 
                      number = 10, 
                      repeats =10, 
@@ -415,10 +376,10 @@ ctrl <- trainControl(method = "repeatedcv",
 
 ### Logistic Regression Model
 
-
 Our first prediction model is a logistic regression model. 
-- Using cross validation
-- Oversampling method implemented here
+- Using cross validation: ten fold, 
+- Oversampling method (smote) implemented here
+- Variable selection: choosing varibles, and why. Not relative values etc etc
 
 
 Summary statistics from the logistic regression model are presented in table xxxx. 
@@ -437,6 +398,8 @@ Figure xx shows the AUC for the glm model.
 
 ```{r, eval = FALSE}
 
+#set eval true later
+
 set.seed(1)
 
 model_glm <- train(default ~.,
@@ -444,28 +407,18 @@ model_glm <- train(default ~.,
                    method = "glm",
                    trControl = ctrl)
 
-
-<<<<<<< HEAD
-=======
 ```
-Comments:
-
-- What variables are significant?
-- Do they make economically sense?
 
 
-The plot below shows the variable importance of the independent variables in the glm model. 
-- Comments: what variables perform well
+```{r, eval = FALSE}
 
-```{r}
 xtable(summary(model_glm))
 
 plot(varImp(model_glm))
 ```
 
 
-```{r}
->>>>>>> f175e95dd71b9865bb3450d7861fdc51ef1f6599
+```{r, include = FALSE}
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
@@ -476,16 +429,6 @@ glm_pred$predict <- as.factor(glm_pred$predict)
 cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
 cm_glm
 
-
-```
-
-```{r, eval = FALSE}
-
-#Set eval to TRUE later to include this in the report. 
-
-summary(model_glm)
-
-plot(varImp(model_glm))
 
 ```
 
@@ -551,9 +494,8 @@ cm_rf <- confusionMatrix(rf_pred$predict, test_data$default)
 cm_rf
 ```
 
-<<<<<<< HEAD
 ```{r, eval = FALSE}
-=======
+
 Comments:
 About the confustion matrix
 How well the model performs relative to glm
@@ -561,7 +503,6 @@ Accuracy, specificity and sensitivity etc.
 
 
 ```{r}
->>>>>>> f175e95dd71b9865bb3450d7861fdc51ef1f6599
 
 # ROC curve rf
 
@@ -668,5 +609,21 @@ stargazer(comp_table$statistics)
 
 
 ```
+
+
+#Appendix
+
+```{r, echo=FALSE, out.width='100%', include = FALSE}
+
+temp_imputed1 <- readRDS(file = "imputeMEAN.Rdata")
+temp_imputed2 <- readRDS(file = "impute.Rdata")
+
+### load images 
+
+include_graphics('imputation_mean.jpeg')
+include_graphics('imputation_pmm.jpeg')
+
+```
+
 
 
