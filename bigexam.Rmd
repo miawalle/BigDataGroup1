@@ -173,6 +173,7 @@ df_corp %>%
 
 ```
 
+
 ```{r, out.width='100%', include = FALSE}
 
 include_graphics("boxplot_pre_cleaning.jpeg")
@@ -435,7 +436,7 @@ Figure xx shows the AUC for the glm model.
 
 
 
-```{r, eval = FALSE}
+```{r}
 
 set.seed(1)
 
@@ -445,8 +446,7 @@ model_glm <- train(default ~.,
                    trControl = ctrl)
 
 
-<<<<<<< HEAD
-=======
+
 ```
 Comments:
 
@@ -465,7 +465,6 @@ plot(varImp(model_glm))
 
 
 ```{r}
->>>>>>> f175e95dd71b9865bb3450d7861fdc51ef1f6599
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
@@ -474,18 +473,10 @@ glm_pred$predict <- ifelse(glm_pred$X1 > 0.5, 1, 0)
 glm_pred$predict <- as.factor(glm_pred$predict)
 
 cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
-cm_glm
 
+xtable(as.matrix(cm_glm$table), label = "GLM confusion matrix")
 
-```
-
-```{r, eval = FALSE}
-
-#Set eval to TRUE later to include this in the report. 
-
-summary(model_glm)
-
-plot(varImp(model_glm))
+xtable(as.matrix(cm_glm$byClass), label = "GLM performance")
 
 ```
 
@@ -548,12 +539,15 @@ rf_pred$predict <- ifelse(rf_pred$X1 > 0.5, 1, 0)
 rf_pred$predict <- as.factor(rf_pred$predict)
 
 cm_rf <- confusionMatrix(rf_pred$predict, test_data$default)
-cm_rf
+
+xtable(as.matrix(cm_rf$table), label = "Random Forest confusion matrix")
+
+xtable(as.matrix(cm_rf$byClass), label = "Random Forest performance")
+
+
 ```
 
-<<<<<<< HEAD
-```{r, eval = FALSE}
-=======
+
 Comments:
 About the confustion matrix
 How well the model performs relative to glm
@@ -561,7 +555,6 @@ Accuracy, specificity and sensitivity etc.
 
 
 ```{r}
->>>>>>> f175e95dd71b9865bb3450d7861fdc51ef1f6599
 
 # ROC curve rf
 
@@ -609,7 +602,7 @@ model_xgb <- caret::train(default ~ .,
 
 ```
 
-```{r, fig.asp=1, fig.width = 14}
+```{r}
 model_xgb <- readRDS("xgb.Rdata")
 
 plot(varImp(model_xgb))
@@ -621,7 +614,10 @@ xgb_pred$predict <- ifelse(xgb_pred$X1 > 0.5, 1, 0)
 xgb_pred$predict <- as.factor(xgb_pred$predict)
 
 cm_xgb <- confusionMatrix(xgb_pred$predict, test_data$default)
-cm_xgb
+
+xtable(as.matrix(cm_xgb$table), label = "xgBoost confusion matrix")
+
+xtable(as.matrix(cm_xgb$byClass), label = "xgBoost performance")
 
 # ROC curve xgb
 
@@ -664,7 +660,7 @@ bwplot(resampling)
 comp_table <- summary(resampling) 
 
   
-stargazer(comp_table$statistics)
+stargazer(comp_table$statistics, header = FALSE, label = c("Accuracy","Kappa"))
 
 
 ```
