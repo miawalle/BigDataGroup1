@@ -69,7 +69,6 @@ We also notice that the variable default, which will be the dependent variable i
 
 ```{r}
 
-
 df_corp$default <- as.factor(df_corp$default) 
 
 df_corp %>% 
@@ -157,12 +156,9 @@ df_corp %>%
 
 ```
 
-<<<<<<< HEAD
 
-```{r, out.width='100%', include = FALSE}
-=======
+
 ```{r, out.width='100%', include = T}
->>>>>>> 3add0d598abce02b7ea8f9eea392e21d8b2edfc4
 
 include_graphics("boxplot_pre_cleaning.jpeg")
 
@@ -412,27 +408,16 @@ model_glm <- train(default ~.,
                    method = "glm",
                    trControl = ctrl)
 
-<<<<<<< HEAD
 
-
-=======
->>>>>>> 3add0d598abce02b7ea8f9eea392e21d8b2edfc4
 ```
 
 
-```{r, eval = FALSE}
+
+```{r}
 
 xtable(summary(model_glm))
 
 plot(varImp(model_glm))
-```
-
-
-<<<<<<< HEAD
-```{r}
-=======
-```{r, include = FALSE}
->>>>>>> 3add0d598abce02b7ea8f9eea392e21d8b2edfc4
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
@@ -441,15 +426,12 @@ glm_pred$predict <- ifelse(glm_pred$X1 > 0.5, 1, 0)
 glm_pred$predict <- as.factor(glm_pred$predict)
 
 cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
-<<<<<<< HEAD
+
 
 xtable(as.matrix(cm_glm$table), label = "GLM confusion matrix")
 
 xtable(as.matrix(cm_glm$byClass), label = "GLM performance")
-=======
-cm_glm
 
->>>>>>> 3add0d598abce02b7ea8f9eea392e21d8b2edfc4
 
 ```
 
@@ -520,10 +502,6 @@ xtable(as.matrix(cm_rf$byClass), label = "Random Forest performance")
 
 ```
 
-<<<<<<< HEAD
-=======
-```{r, eval = FALSE}
->>>>>>> 3add0d598abce02b7ea8f9eea392e21d8b2edfc4
 
 Comments:
 About the confustion matrix
