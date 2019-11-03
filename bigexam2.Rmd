@@ -59,7 +59,7 @@ The first thing we notice is that some variables are classified as numeric when 
 
 ```{r}
 
-stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title  = "Summary statistics" )
+stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title  = "Summary statistics")
 
 ```
 
@@ -67,13 +67,15 @@ Table xx displays summary statistics of our data. As shown in the table, the val
 
 We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
 
-```{r}
+```{r hist, fig.cap="\\label{fig:hist}Histogram of the distribution"}
 
 df_corp$default <- as.factor(df_corp$default) 
 
 df_corp %>% 
   ggplot(aes(x = default, fill = default)) +
-  geom_bar()
+  geom_bar() +
+  ggtitle("Distribution of the none-default/default") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
 
@@ -158,7 +160,7 @@ df_corp %>%
 
 
 
-```{r, out.width='100%', include = T}
+```{r pre_boxplot, out.width='100%', include = T, fig.cap="\\label{fig:pre_boxplot}plotting example"}
 
 include_graphics("boxplot_pre_cleaning.jpeg")
 
@@ -644,7 +646,7 @@ include_graphics('imputation_pmm.jpeg')
 ```
 
 
-hei
+
 
 
 
