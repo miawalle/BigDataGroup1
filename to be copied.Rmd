@@ -453,7 +453,7 @@ Summary statistics are presented below.
 
 
 
-```{r, eval = FALSE}
+```{r}
 
 set.seed(1)
 
@@ -473,15 +473,14 @@ Comments:
 The plot below shows the variable importance of the independent variables in the glm model. 
 - Comments: what variables perform well
 
-```{r, eval=FALSE}
-
-stargazer(model_glm)
+```{r}
+xtable(summary(model_glm))
 
 plot(varImp(model_glm))
 ```
 
 
-```{r, eval=FALSE}
+```{r}
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
@@ -499,7 +498,7 @@ Comments:
 Discuss the confusion matrix. 
 
 
-```{r, eval= FALSE}
+```{r}
 
 # ROC curve glm
 
@@ -659,7 +658,7 @@ resampling <- resamples(models)
 bwplot(resampling)
 
 comp_table <- summary(resampling) 
-  xtable(comp_table)
+
   
 stargazer(comp_table$statistics)
 
