@@ -59,7 +59,7 @@ The first thing we notice is that some variables are classified as numeric when 
 
 ```{r}
 
-stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title = "Summary statistics" )
+stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title  = "Summary statistics" )
 
 ```
 
@@ -400,7 +400,7 @@ Figure xx shows the AUC for the glm model.
 
 
 
-```{r}
+```{r, cache= TRUE}
 
 #set eval true later
 
@@ -607,7 +607,7 @@ Accuracy is the percentage of correctly classifies instances out of all instance
 
 Kappa or Cohen’s Kappa is like classification accuracy, except that it is normalized at the baseline of random chance on your dataset. It is a more useful measure to use on problems that have an imbalance in the classes (e.g. 70-30 split for classes 0 and 1 and you can achieve 70% accuracy by predicting all instances are for class 0). Learn more about Kappa here.
 
-```{r}
+```{r, cache= TRUE}
 
 
 # Look at the performance
