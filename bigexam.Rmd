@@ -59,7 +59,7 @@ The first thing we notice is that some variables are classified as numeric when 
 
 ```{r}
 
-stargazer(df_corp, summary.stat = c("min","max"),header = FALSE)
+stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title = "Summary statistics" )
 
 ```
 
@@ -135,7 +135,7 @@ as.data.frame(placeholder/nrow(df_corp)) %>%
 df_corp[df_corp < -1000000000000000] <- NA 
 df_corp[df_corp >  1000000000000000] <- NA
 
-stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE)
+stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE, title = "Summary statistics")
 
 ```
 
@@ -225,6 +225,9 @@ densityplot(temp_imputed2, drop.unused.levels = TRUE)
 ```
 
 ```{r, include = FALSE, include=FALSE}
+
+temp_imputed1 <- readRDS(file = "imputeMEAN.Rdata")
+temp_imputed2 <- readRDS(file = "impute.Rdata")
 
 # We complete the impution and check the result
 
@@ -428,11 +431,12 @@ glm_pred$predict <- as.factor(glm_pred$predict)
 cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
 
 
-xtable(as.matrix(cm_glm$table), label = "GLM confusion matrix")
+xtable(as.matrix(cm_glm$table))
 
-xtable(as.matrix(cm_glm$byClass), label = "GLM performance")
+perf_glm <- as.matrix(cm_glm$byClass)
+colnames(perf_glm) <- c("Values")
 
-
+xtable(perf_glm)
 ```
 
 
@@ -495,11 +499,12 @@ rf_pred$predict <- as.factor(rf_pred$predict)
 
 cm_rf <- confusionMatrix(rf_pred$predict, test_data$default)
 
-xtable(as.matrix(cm_rf$table), label = "Random Forest confusion matrix")
+xtable(as.matrix(cm_rf$table))
 
-xtable(as.matrix(cm_rf$byClass), label = "Random Forest performance")
+perf_rf <- as.matrix(cm_rf$byClass)
+colnames(perf_rf) <- c("Values")
 
-
+xtable(perf_rf)
 ```
 
 
@@ -570,9 +575,12 @@ xgb_pred$predict <- as.factor(xgb_pred$predict)
 
 cm_xgb <- confusionMatrix(xgb_pred$predict, test_data$default)
 
-xtable(as.matrix(cm_xgb$table), label = "xgBoost confusion matrix")
+xtable(as.matrix(cm_xgb$table))
 
-xtable(as.matrix(cm_xgb$byClass), label = "xgBoost performance")
+perf_xgb <- as.matrix(cm_xgb$byClass)
+colnames(perf_xgb) <- c("Values")
+
+xtable(perf_xgb)
 
 # ROC curve xgb
 
@@ -615,7 +623,8 @@ bwplot(resampling)
 comp_table <- summary(resampling) 
 
   
-stargazer(comp_table$statistics, header = FALSE, label = c("Accuracy","Kappa"))
+stargazer(comp_table$statistics$Accuracy, header = FALSE, title = "Accuracy" )
+stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa")
 
 
 ```
@@ -625,8 +634,7 @@ stargazer(comp_table$statistics, header = FALSE, label = c("Accuracy","Kappa"))
 
 ```{r, echo=FALSE, out.width='100%', include = FALSE}
 
-temp_imputed1 <- readRDS(file = "imputeMEAN.Rdata")
-temp_imputed2 <- readRDS(file = "impute.Rdata")
+
 
 ### load images 
 
