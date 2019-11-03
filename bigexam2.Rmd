@@ -420,7 +420,9 @@ model_glm <- train(default ~.,
 
 ```{r}
 
-xtable(summary(model_glm))
+summary_glm <- xtable(summary(model_glm), caption = "Summary glm model")
+
+print(summary_glm, scalebox=1, caption.placement = "top", label = "tab:sumtable")
 
 plot(varImp(model_glm))
 
@@ -433,12 +435,16 @@ glm_pred$predict <- as.factor(glm_pred$predict)
 cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
 
 
-xtable(as.matrix(cm_glm$table))
+confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM")
+
+print(confusion_glm, scalebox = 1, caption.placement = "top", label = "tab:confusion_glm")
 
 perf_glm <- as.matrix(cm_glm$byClass)
 colnames(perf_glm) <- c("Values")
 
-xtable(perf_glm)
+performance_glm <- xtable(perf_glm, caption = "Performance indicators GLM")
+
+print(performance_glm, scalebox = 1, caption.placement = "top", label = "tab:performance_glm")
 ```
 
 
@@ -501,7 +507,7 @@ rf_pred$predict <- as.factor(rf_pred$predict)
 
 cm_rf <- confusionMatrix(rf_pred$predict, test_data$default)
 
-xtable(as.matrix(cm_rf$table))
+xtable(as.matrix(cm_rf$table), caption = "Confusion matrix Rf")
 
 perf_rf <- as.matrix(cm_rf$byClass)
 colnames(perf_rf) <- c("Values")
