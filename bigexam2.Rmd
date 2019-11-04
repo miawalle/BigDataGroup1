@@ -23,9 +23,6 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FA
 
 
 
-hsuaihteiayu
-
-
 ```{r}
 
 library(dplyr)
@@ -645,9 +642,9 @@ stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa")
 ```
 
 
-#Appendix
+# Appendix
 
-```{r, echo=FALSE, out.width='100%', include = FALSE}
+```{r, echo=FALSE, out.width='100%'}
 
 
 
@@ -657,9 +654,97 @@ include_graphics('imputation_mean.jpeg')
 include_graphics('imputation_pmm.jpeg')
 
 ```
+# Assignment 5
 
+```{r}
 
+#install mathematical package
 
+library(SciViews)
+
+#define values of some constants
+
+LGD = 0.45
+EAD = 100
+M = 2.5
+S = 50
+
+#calculate RWA according to RWA formula and glm 
+
+glm <- data.frame(R = 0.12*(1-exp(-50*glm_pred$X1))/(1-exp(-50)) +
+                    0.24*(1-(1-exp(-50*glm_pred$X1))/(1-exp(-50))))
+
+glm$b = (0.11852 - 0.05478*ln(glm_pred$X1))^2
+
+glm$K = (LGD*pnorm(1-glm$R)^(-0.5)*qnorm(glm_pred$X1) + 
+           (glm$R/(1-glm$R)^0.5*qnorm(0.999)) - glm_pred$X1*LGD)*
+  (1-1.5*glm$b)*(1+(M-2.5)*glm$b)
+
+glm$RWA = glm$K*12.5*EAD
+
+#calculate RWA according to RWA formula and random forest
+
+rf <- data.frame(R = 0.12*(1-exp(-50*rf_pred$X1))/(1-exp(-50)) +
+                   0.24*(1-(1-exp(-50*rf_pred$X1))/(1-exp(-50))))
+
+rf$b = (0.11852 - 0.05478*ln(rf_pred$X1))^2
+
+rf$K = (LGD*pnorm(1-rf$R)^(-0.5)*qnorm(rf_pred$X1) + 
+          (rf$R/(1-rf$R)^0.5*qnorm(0.999)) - rf_pred$X1*LGD)*
+  (1-1.5*rf$b)*(1+(M-2.5)*rf$b)
+
+rf$RWA = rf$K*12.5*EAD
+
+#calculate RWA according to RWA formula and xgboost
+
+xgb <- data.frame(R = 0.12*(1-exp(-50*xgb_pred$X1))/(1-exp(-50)) +
+                   0.24*(1-(1-exp(-50*xgb_pred$X1))/(1-exp(-50))))
+
+xgb$b = (0.11852 - 0.05478*ln(xgb_pred$X1))^2
+
+xgb$K = (LGD*pnorm(1-xgb$R)^(-0.5)*qnorm(xgb_pred$X1) + 
+          (xgb$R/(1-xgb$R)^0.5*qnorm(0.999)) - xgb_pred$X1*LGD)*
+  (1-1.5*xgb$b)*(1+(M-2.5)*xgb$b)
+
+xgb$RWA = xgb$K*12.5*EAD
+
+#Compare the RWA in each model
+
+library(gridExtra)
+
+RWA_models <- data.frame(RWA_glm = glm$RWA,
+               RWA_rf = rf$RWA,
+               RWA_xgb = xgb$RWA)
+
+p_glm <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) + 
+            geom_line(aes(y = RWA_glm), color = "steelblue") +
+            ggtitle("GLM logistic") +
+            theme(plot.title = element_text(hjust = 0.5)) +
+            ylab("RWA") +
+            xlab("")
+     
+        
+
+p_rf <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) +
+            geom_line(aes(y = RWA_rf), color="darkgreen") +
+            ggtitle("Random Forest") +
+            theme(plot.title = element_text(hjust = 0.5)) +
+            ylab("RWA") +
+            xlab("")
+    
+            
+p_xgb <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) +          
+            geom_line(aes(y = RWA_xgb), color ="darkred") +
+            ggtitle("xgBoost") +
+            theme(plot.title = element_text(hjust = 0.5)) +
+            ylab("RWA") +
+            xlab("")
+     
+summary(RWA_models)
+
+grid.arrange(p_glm, p_rf, p_xgb, nrow = 3)
+
+````
 
 
 
