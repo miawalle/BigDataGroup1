@@ -641,19 +641,6 @@ stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa")
 
 ```
 
-
-# Appendix
-
-```{r, echo=FALSE, out.width='100%'}
-
-
-
-### load images 
-
-include_graphics('imputation_mean.jpeg')
-include_graphics('imputation_pmm.jpeg')
-
-```
 # Assignment 5
 
 ```{r}
@@ -744,8 +731,19 @@ summary(RWA_models)
 
 grid.arrange(p_glm, p_rf, p_xgb, nrow = 3)
 
-````
+```
+
+# Appendix
+
+```{r, echo=FALSE, out.width='100%'}
 
 
+
+### load images 
+
+include_graphics('imputation_mean.jpeg')
+include_graphics('imputation_pmm.jpeg')
+
+```
 
 
