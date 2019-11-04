@@ -5,6 +5,9 @@ output:
   pdf_document:
     toc: yes
     toc_depth: '2'
+  word_document:
+    toc: yes
+    toc_depth: '2'
   html_document:
     toc: yes
     toc_depth: 2
