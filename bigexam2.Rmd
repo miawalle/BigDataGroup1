@@ -743,19 +743,22 @@ stargazer(RWA_models, header = FALSE)
 grid.arrange(p_glm, p_rf, p_xgb, nrow = 3)
 
 ```
-\pagebreak
 
 # Appendix
 
 ```{r, echo=FALSE, out.width='100%'}
 
 
-
 ### load images 
 
-include_graphics('imputation_mean.jpeg')
 include_graphics('imputation_pmm.jpeg')
 
 ```
+```{r, echo=FALSE, out.width='100%'}
 
+### load images 
+
+include_graphics('imputation_pmm.jpeg',)
+
+```
 
