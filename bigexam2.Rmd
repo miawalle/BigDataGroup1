@@ -498,6 +498,10 @@ model_rf <- caret::train(default ~ .,
 
 ```
 
+\pagebreak
+
+# Random Forest
+
 ```{r}
 
 model_rf <- readRDS("rf.Rdata")
@@ -545,8 +549,9 @@ print(result.coords)#to get threshold and accuracy
 
 ```
 
- - #  Show ROC here # - 
+\pagebreak
 
+# xgBoost
 
 ```{r, eval = FALSE}
 #Model 3: Xgboost
@@ -606,6 +611,8 @@ result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c
 print(result.coords)#to get threshold and accuracy
 ```
 
+\pagebreak
+
 ```{r, echo=FALSE, out.width='100%'}
 
 include_graphics('xgb_tuning_plot.jpeg')
@@ -618,6 +625,8 @@ These are the default metrics used to evaluate algorithms on binary and multi-cl
 Accuracy is the percentage of correctly classifies instances out of all instances. It is more useful on a binary classification than multi-class classification problems because it can be less clear exactly how the accuracy breaks down across those classes (e.g. you need to go deeper with a confusion matrix). Learn more about Accuracy here.
 
 Kappa or Cohen’s Kappa is like classification accuracy, except that it is normalized at the baseline of random chance on your dataset. It is a more useful measure to use on problems that have an imbalance in the classes (e.g. 70-30 split for classes 0 and 1 and you can achieve 70% accuracy by predicting all instances are for class 0). Learn more about Kappa here.
+
+\pagebreak
 
 ```{r, cache= TRUE}
 
@@ -640,6 +649,8 @@ stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa")
 
 
 ```
+
+\pagebreak
 
 # Assignment 5
 
@@ -727,11 +738,12 @@ p_xgb <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) +
             ylab("RWA") +
             xlab("")
      
-summary(RWA_models)
+stargazer(RWA_models, header = FALSE)
 
 grid.arrange(p_glm, p_rf, p_xgb, nrow = 3)
 
 ```
+\pagebreak
 
 # Appendix
 
