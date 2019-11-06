@@ -32,15 +32,17 @@ library(ggplot2)
 library(Hmisc)
 library(purrr)
 library(caret)
-library(ranger)
+library(ranger) 
 library(xgboost)
 library(kableExtra) # just to make the output nicer
 library(mice)
 library(stargazer)
 library(xtable)
-library(pROC)
+library(pROC) # think we use yardstick instead, nicer plots
 library(knitr)
 library(grid)
+library(yardstick)
+library(SciViews)
 
 options(xtable.comment=FALSE)
 
@@ -63,7 +65,19 @@ The first thing we notice is that some variables are classified as numeric when 
 
 ```{r}
 
-stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title  = "Summary statistics")
+caption_at_bottom <- function(expr) {
+  x <- capture.output(expr)
+  cap <- grep("\\\\caption", x)
+  lab <- grep("\\\\label", x)
+  last <- grep("\\\\end\\{table", x)
+  cat(
+    paste(
+      c(x[-last], x[cap], x[lab], x[last])[-c(cap, lab)]
+    , collapse = "\n")
+  , "\n")
+}
+
+caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title  = "Summary statistics"))
 
 ```
 
@@ -141,7 +155,7 @@ as.data.frame(placeholder/nrow(df_corp)) %>%
 df_corp[df_corp < -1000000000000000] <- NA 
 df_corp[df_corp >  1000000000000000] <- NA
 
-stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE, title = "Summary statistics")
+caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE, title = "Summary statistics"))
 
 ```
 
@@ -206,6 +220,10 @@ df_corp$total_assets <- remove_outliers_na(df_corp$total_assets)
 df_corp$revenue <- remove_outliers_na(df_corp$revenue)
 df_corp$amount_unpaid_debt <- remove_outliers_na(df_corp$amount_unpaid_debt)
 
+df_corp$default <- recode_factor(
+  df_corp$default,
+  `0` = "No",
+  `1` = "Yes")
 
 df_corp <- df_corp %>% 
   select(-equity_ratio_stability) # Removed due to collinearity and if look at the earlier plots it make sense.
@@ -222,9 +240,9 @@ saveRDS(temp_imputed1, file = "imputeMEAN.Rdata")
 
 saveRDS(temp_imputed2, file = "impute.Rdata") 
 
-densityplot(temp_imputed1, drop.unused.levels = TRUE)
+densityplot(temp_imputed1, drop.unused.levels = TRUE) # Save plots again
 
-densityplot(temp_imputed2, drop.unused.levels = TRUE)
+densityplot(temp_imputed2, drop.unused.levels = TRUE) # Save plots again
 
 # Running the imputations and generating density plots of the imputed values is higly time consuming. Therefore, we upload the saved files and  plots instead. 
 # See appendix for plots. 
@@ -269,7 +287,7 @@ xtable(table2)
 
 # Looking at the distribution again
 
-df_corp %>% 
+df_cleaned %>% 
   select(which(sapply(.,class)=="numeric"),default) %>%   
   gather(metric, value, -default) %>% 
   ggplot(aes(x= default, y=value, fill = default))+
@@ -292,10 +310,8 @@ Figure \ref{fig:boxpot_post_cleaning} and \ref{fig:density_post_cleaning} contai
 
 ```{r, echo=FALSE, out.width='100%'}
 
-
-
-include_graphics('boxplot_post_cleaning.jpeg')
-include_graphics('density_post_cleaning.jpeg')
+include_graphics('boxplot_post_cleaning.jpeg') # Save plots again
+include_graphics('density_post_cleaning.jpeg') # Save plots again
 
 ```
 
@@ -350,10 +366,10 @@ corr_check <- function(data, threshold){
 }
 
 
-cor_mat <- corr_check(cor_df, 0.7)
+cor_mat <- corr_check(cor_df, 0.6)
 
 train_data <- train_data %>% 
-  select(-operating_margin, -liquidity_ratio_1, -EBITDA_margin, -equity)
+  select(-operating_margin, -liquidity_ratio_1, -liquidity_ratio_2, -EBITDA_margin, -equity)
 
 ```
 
@@ -380,7 +396,8 @@ ctrl <- trainControl(method = "repeatedcv",
                      number = 10, 
                      repeats =10, 
                      verboseIter = FALSE,
-                     sampling = "smote")
+                     sampling = "smote",
+                     classProbs=TRUE)
 
 ```
 
@@ -417,7 +434,6 @@ model_glm <- train(default ~.,
                    method = "glm",
                    trControl = ctrl)
 
-
 ```
 
 
@@ -426,29 +442,29 @@ model_glm <- train(default ~.,
 
 summary_glm <- xtable(summary(model_glm), caption = "Summary glm model")
 
-print(summary_glm, scalebox=1, caption.placement = "top", label = "tab:sumtable")
+print(summary_glm, scalebox=1, caption.placement = "bottom", label = "tab:sumtable")
 
 plot(varImp(model_glm))
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
 
-glm_pred$predict <- ifelse(glm_pred$X1 > 0.5, 1, 0)
+glm_pred$predict <- ifelse(glm_pred$Yes > 0.5, "Yes", "No")
 glm_pred$predict <- as.factor(glm_pred$predict)
 
 cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
 
-
 confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM")
 
-print(confusion_glm, scalebox = 1, caption.placement = "top", label = "tab:confusion_glm")
+print(confusion_glm, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_glm")
 
 perf_glm <- as.matrix(cm_glm$byClass)
 colnames(perf_glm) <- c("Values")
 
 performance_glm <- xtable(perf_glm, caption = "Performance indicators GLM")
 
-print(performance_glm, scalebox = 1, caption.placement = "top", label = "tab:performance_glm")
+print(performance_glm, scalebox = 1, caption.placement = "bottom", label = "tab:performance_glm")
+
 ```
 
 
@@ -456,14 +472,36 @@ print(performance_glm, scalebox = 1, caption.placement = "top", label = "tab:per
 
 # ROC curve glm
 
-result.predicted.prob <- predict(model_glm, test_data, type="prob") # Prediction
+glm_predictions <- predict(model_glm, test_data, type="prob")
 
-result.roc <- roc(test_data$default, result.predicted.prob$`1`) # Draw ROC 
+test_glm <- test_data %>%
+  select(default) %>% 
+  mutate(glm_prob_predictions = glm_predictions$Yes)
 
-plot(result.roc, print.thres="best", print.thres.best.method="closest.topleft")
+glm_auc <- test_glm %>% 
+              roc_auc(default, glm_prob_predictions)
 
-result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c("threshold", "accuracy"))
-print(result.coords)#to get threshold and accuracy
+glm_auc <- paste(round(glm_auc$.estimate, 4), sep = "")
+
+test_glm %>%
+  roc_curve(default, glm_prob_predictions) %>% 
+  ggplot(aes(x = 1- specificity, y = sensitivity)) +
+  geom_path() +
+  geom_abline(lty = 3) +
+  annotate("text",x = 0.7, y = 0.4, label = glm_auc) +
+  coord_equal() +
+  ggtitle("ROC curve GLM (Logistic)") +
+  theme(plot.title = element_text(hjust = 0.5))
+ 
+  
+# result.predicted.prob <- predict(model_glm, test_data, type="prob") # Prediction
+
+# result.roc <- roc(test_data$default, result.predicted.prob$`1`) # Draw ROC 
+
+# plot(result.roc, print.thres="best", print.thres.best.method="closest.topleft")
+
+# result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c("threshold", "accuracy"))
+# print(result.coords)#to get threshold and accuracy
 
 ```
 
@@ -484,13 +522,21 @@ The model's confusion matrics is presented in figure xx, and the ROC curve is pr
 
 ############################ Model 2: Random Forest ######################################
 
+tunegrid <- expand.grid(.mtry= 4,
+                        .splitrule = "gini",
+                        .min.node.size = 10) # tuning with mtry = 1:5, min.node.size = 10,20
+
 set.seed(1)
 
 model_rf <- caret::train(default ~ .,
                          data = train_data,
-                         method = "rf",
+                         method = "ranger",
                          preProcess = c("scale", "center"),
-                         trControl = ctrl)
+                         trControl = ctrl,
+                         tuneGrid = tunegrid,
+                         num.trees = 100,
+                         importance = "permutation")
+
 
 
 # saveRDS(model_rf, file = "rf.Rdata")
@@ -500,27 +546,33 @@ model_rf <- caret::train(default ~ .,
 
 \pagebreak
 
-# Random Forest
+
 
 ```{r}
 
 model_rf <- readRDS("rf.Rdata")
 
-plot(varImp(model_rf))
-
 rf_pred <- data.frame(actual = test_data$default,
-                      predict(model_rf, newdata = test_data, type = "prob"))
-rf_pred$predict <- ifelse(rf_pred$X1 > 0.5, 1, 0)
+                       predict(model_rf, newdata = test_data, type = "prob"))
+
+rf_pred$predict <- ifelse(rf_pred$Yes > 0.5, "Yes", "No")
 rf_pred$predict <- as.factor(rf_pred$predict)
+
+plot(varImp(model_rf))
 
 cm_rf <- confusionMatrix(rf_pred$predict, test_data$default)
 
-xtable(as.matrix(cm_rf$table), caption = "Confusion matrix Rf")
+confusion_rf <- xtable(as.matrix(cm_rf$table), caption = "Confusion matrix Random Forest")
+
+print(confusion_rf, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_rf")
 
 perf_rf <- as.matrix(cm_rf$byClass)
 colnames(perf_rf) <- c("Values")
 
-xtable(perf_rf)
+performance_rf <- xtable(perf_rf, caption = "Performance indicators Random Forest")
+
+print(performance_rf, scalebox = 1, caption.placement= "bottom", label = "tab:performance_rf")
+
 ```
 
 
@@ -534,14 +586,36 @@ Accuracy, specificity and sensitivity etc.
 
 # ROC curve rf
 
-result.predicted.prob <- predict(model_rf, test_data, type="prob") # Prediction
+rf_predictions <- predict(model_rf, test_data, type = "prob")
 
-result.roc <- roc(test_data$default, result.predicted.prob$`1`) # Draw ROC 
+test_rf <- test_data %>%
+  select(default) %>% 
+  mutate(rf_prob_predictions = rf_predictions$Yes)
 
-plot(result.roc, print.thres="best", print.thres.best.method="closest.topleft")
+rf_auc <- test_rf %>% 
+              roc_auc(default, rf_prob_predictions)
 
-result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c("threshold", "accuracy"))
-print(result.coords)#to get threshold and accuracy
+rf_auc <- paste(round(rf_auc$.estimate, 4), sep = "")
+
+test_rf %>%
+  roc_curve(default, rf_prob_predictions) %>% 
+  ggplot(aes(x = 1- specificity, y = sensitivity)) +
+  geom_path() +
+  geom_abline(lty = 3) +
+  annotate("text",x = 0.7, y = 0.4, label = rf_auc) +
+  coord_equal() +
+  ggtitle("ROC curve Random Forest (Ranger)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+# result.predicted.prob <- predict(model_rf, test_data, type="prob") # Prediction
+
+# result.roc <- roc(test_data$default, result.predicted.prob$`1`) # Draw ROC 
+
+# plot(result.roc, print.thres="best", print.thres.best.method="closest.topleft")
+
+# result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c("threshold", "accuracy"))
+# print(result.coords)#to get threshold and accuracy
 
 
 # Running the model is highly time consuming.
@@ -587,28 +661,54 @@ plot(varImp(model_xgb))
 xgb_pred <- data.frame(actual = test_data$default,
                       predict(model_xgb, newdata = test_data, type = "prob"))
 
-xgb_pred$predict <- ifelse(xgb_pred$X1 > 0.5, 1, 0)
+xgb_pred$predict <- ifelse(xgb_pred$Yes > 0.5, "Yes", "No")
 xgb_pred$predict <- as.factor(xgb_pred$predict)
 
-cm_xgb <- confusionMatrix(xgb_pred$predict, test_data$default)
+cm_xgb <- confusionMatrix(xgb_pred$predict, xgb_pred$actual)
 
-xtable(as.matrix(cm_xgb$table))
+confusion_xgb <- xtable(as.matrix(cm_xgb$table), caption = "Confusion matrix xgboost")
+
+print(confusion_xgb, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_xgb")
 
 perf_xgb <- as.matrix(cm_xgb$byClass)
 colnames(perf_xgb) <- c("Values")
 
-xtable(perf_xgb)
+performance_xgb <- xtable(perf_xgb, caption = "Performance indicators xgboost")
+
+print(performance_xgb, scalebox = 1, caption.placement= "bottom", label = "tab:performance_xgb")
 
 # ROC curve xgb
 
-result.predicted.prob <- predict(model_xgb, test_data, type="prob") # Prediction
+xgb_predictions <- predict(model_xgb, test_data, type = "prob")
 
-result.roc <- roc(test_data$default, result.predicted.prob$`1`) # Draw ROC curve.
+test_xgb <- test_data %>%
+  select(default) %>% 
+  mutate(xgb_prob_predictions = xgb_predictions$Yes)
 
-plot(result.roc, print.thres="best", print.thres.best.method="closest.topleft")
+xgb_auc <- test_xgb %>% 
+              roc_auc(default, xgb_prob_predictions)
 
-result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c("threshold", "accuracy"))
-print(result.coords)#to get threshold and accuracy
+xgb_auc <- paste(round(xgb_auc$.estimate, 4), sep = "")
+
+test_xgb %>%
+  roc_curve(default, xgb_prob_predictions) %>% 
+  ggplot(aes(x = 1- specificity, y = sensitivity)) +
+  geom_path() +
+  geom_abline(lty = 3) +
+  annotate("text",x = 0.7, y = 0.4, label = xgb_auc) +
+  coord_equal() +
+  ggtitle("ROC curve Xgboost") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# result.predicted.prob <- predict(model_xgb, test_data, type="prob") # Prediction
+
+# result.roc <- roc(test_data$default, result.predicted.prob$`1`) # Draw ROC curve.
+
+# plot(result.roc, print.thres="best", print.thres.best.method="closest.topleft")
+
+# result.coords <- coords(result.roc, "best", best.method="closest.topleft", ret=c("threshold", "accuracy"))
+# print(result.coords)#to get threshold and accuracy
+
 ```
 
 \pagebreak
@@ -625,6 +725,10 @@ These are the default metrics used to evaluate algorithms on binary and multi-cl
 Accuracy is the percentage of correctly classifies instances out of all instances. It is more useful on a binary classification than multi-class classification problems because it can be less clear exactly how the accuracy breaks down across those classes (e.g. you need to go deeper with a confusion matrix). Learn more about Accuracy here.
 
 Kappa or Cohen’s Kappa is like classification accuracy, except that it is normalized at the baseline of random chance on your dataset. It is a more useful measure to use on problems that have an imbalance in the classes (e.g. 70-30 split for classes 0 and 1 and you can achieve 70% accuracy by predicting all instances are for class 0). Learn more about Kappa here.
+
+Use precision and recall to focus on small positive class — When the positive class is smaller and the ability to detect correctly positive samples is our main focus (correct detection of negatives examples is less important to the problem) we should use precision and recall.
+
+Precision and recall are two extremely important model evaluation metrics. While precision refers to the percentage of your results which are relevant, recall refers to the percentage of total relevant results correctly classified by your algorithm. Unfortunately, it is not possible to maximize both these metrics at the same time, as one comes at the cost of another. For simplicity, there is another metric available, called F-1 score, which is a harmonic mean of precision and recall. For problems where both precision and recall are important, one can select a model which maximizes this F-1 score. For other problems, a trade-off is needed, and a decision has to be made whether to maximize precision, or recall.
 
 \pagebreak
 
@@ -644,8 +748,8 @@ bwplot(resampling)
 comp_table <- summary(resampling) 
 
   
-stargazer(comp_table$statistics$Accuracy, header = FALSE, title = "Accuracy" )
-stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa")
+caption_at_bottom(stargazer(comp_table$statistics$Accuracy, header = FALSE, title = "Accuracy" ))
+caption_at_bottom(stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa"))
 
 
 ```
@@ -656,9 +760,6 @@ stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa")
 
 ```{r}
 
-#install mathematical package
-
-library(SciViews)
 
 #define values of some constants
 
@@ -667,44 +768,46 @@ EAD = 100
 M = 2.5
 S = 50
 
+rf_pred
 #calculate RWA according to RWA formula and glm 
 
-glm <- data.frame(R = 0.12*(1-exp(-50*glm_pred$X1))/(1-exp(-50)) +
-                    0.24*(1-(1-exp(-50*glm_pred$X1))/(1-exp(-50))))
+glm <- data.frame(R = 0.12*(1-exp(-50*glm_predictions$Yes))/(1-exp(-50)) +
+                   0.24*(1-(1-exp(-50*glm_predictions$Yes))/(1-exp(-50))))
 
-glm$b = (0.11852 - 0.05478*ln(glm_pred$X1))^2
+glm$b = (0.11852 - 0.05478*ln(glm_predictions$Yes))^2
 
-glm$K = (LGD*pnorm(1-glm$R)^(-0.5)*qnorm(glm_pred$X1) + 
-           (glm$R/(1-glm$R)^0.5*qnorm(0.999)) - glm_pred$X1*LGD)*
-  (1-1.5*glm$b)*(1+(M-2.5)*glm$b)
+glm$K = (LGD*pnorm(1-glm$R)^(-0.5)*qnorm(glm_predictions$Yes) + 
+          ((glm$R/(1-glm$R)^0.5)*qnorm(0.999)) - glm_predictions$Yes*LGD)*
+  (1-1.5*glm$b)^(-1)*(1+(M-2.5)*glm$b)
 
 glm$RWA = glm$K*12.5*EAD
 
 #calculate RWA according to RWA formula and random forest
 
-rf <- data.frame(R = 0.12*(1-exp(-50*rf_pred$X1))/(1-exp(-50)) +
-                   0.24*(1-(1-exp(-50*rf_pred$X1))/(1-exp(-50))))
+rf <- data.frame(R = 0.12*(1-exp(-50*rf_predictions$Yes))/(1-exp(-50)) +
+                   0.24*(1-(1-exp(-50*rf_predictions$Yes))/(1-exp(-50))))
 
-rf$b = (0.11852 - 0.05478*ln(rf_pred$X1))^2
+rf$b = (0.11852 - 0.05478*ln(rf_predictions$Yes))^2
 
-rf$K = (LGD*pnorm(1-rf$R)^(-0.5)*qnorm(rf_pred$X1) + 
-          (rf$R/(1-rf$R)^0.5*qnorm(0.999)) - rf_pred$X1*LGD)*
-  (1-1.5*rf$b)*(1+(M-2.5)*rf$b)
+rf$K = (LGD*pnorm(1-rf$R)^(-0.5)*qnorm(rf_predictions$Yes) + 
+          ((rf$R/(1-rf$R)^0.5)*qnorm(0.999)) - rf_predictions$Yes*LGD)*
+  (1-1.5*rf$b)^(-1)*(1+(M-2.5)*rf$b)
 
 rf$RWA = rf$K*12.5*EAD
 
 #calculate RWA according to RWA formula and xgboost
 
-xgb <- data.frame(R = 0.12*(1-exp(-50*xgb_pred$X1))/(1-exp(-50)) +
-                   0.24*(1-(1-exp(-50*xgb_pred$X1))/(1-exp(-50))))
+xgb <- data.frame(R = 0.12*(1-exp(-50*xgb_predictions$Yes))/(1-exp(-50)) +
+                   0.24*(1-(1-exp(-50*xgb_predictions$Yes))/(1-exp(-50))))
 
-xgb$b = (0.11852 - 0.05478*ln(xgb_pred$X1))^2
+xgb$b = (0.11852 - 0.05478*ln(xgb_predictions$Yes))^2
 
-xgb$K = (LGD*pnorm(1-xgb$R)^(-0.5)*qnorm(xgb_pred$X1) + 
-          (xgb$R/(1-xgb$R)^0.5*qnorm(0.999)) - xgb_pred$X1*LGD)*
-  (1-1.5*xgb$b)*(1+(M-2.5)*xgb$b)
+xgb$K = (LGD*pnorm(1-xgb$R)^(-0.5)*qnorm(xgb_predictions$Yes) + 
+          ((xgb$R/(1-xgb$R)^0.5)*qnorm(0.999)) - xgb_predictions$Yes*LGD)*
+  (1-1.5*xgb$b)^(-1)*(1+(M-2.5)*xgb$b)
 
 xgb$RWA = xgb$K*12.5*EAD
+
 
 #Compare the RWA in each model
 
@@ -738,7 +841,7 @@ p_xgb <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) +
             ylab("RWA") +
             xlab("")
      
-stargazer(RWA_models, header = FALSE)
+caption_at_bottom(stargazer(RWA_models, header = FALSE))
 
 grid.arrange(p_glm, p_rf, p_xgb, nrow = 3)
 
