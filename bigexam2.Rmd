@@ -19,8 +19,8 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FA
 
 ```
 
-\pagebreak
 
+\pagebreak
 
 
 ```{r}
@@ -43,6 +43,7 @@ library(knitr)
 library(grid)
 library(yardstick)
 library(SciViews)
+library(gridExtra)
 
 options(xtable.comment=FALSE)
 
@@ -63,7 +64,7 @@ In this section, we will train and rund three different prediction models based 
 The first thing we notice is that some variables are classified as numeric when they should be factor variables, and vice versa. We reclassify these variables. 
 
 
-```{r}
+```{r, cache= TRUE}
 
 caption_at_bottom <- function(expr) {
   x <- capture.output(expr)
@@ -160,29 +161,23 @@ caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max","mean","sd"), 
 ```
 
 
-```{r, fig.asp=1, fig.width = 14, eval= FALSE, include=FALSE}
+```{r pre_boxplot, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:pre_boxplot}Before cleaning"}
 
 # We take a new look after replacing the errors with NA
-# Mia: Can we delete this chunck? Think adding another graph is a bit exessive. 
 
 df_corp %>% 
   select(which(sapply(.,class)=="numeric"),default) %>%   
   gather(metric, value, -default) %>% 
   ggplot(aes(x= default, y=value, fill = default))+
   geom_boxplot(show.legend = FALSE) +
-  facet_wrap(~ metric, scales = "free")
+  facet_wrap(~ metric, scales = "free") +
+  ggtitle("Boxplot of the distibution before cleaning") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # We definitly need to do something about those outliers, only gross_operating_inc_perc and age_of_company seems to be okay.
 
 ```
 
-
-
-```{r pre_boxplot, out.width='100%', include = T, fig.cap="\\label{fig:pre_boxplot}plotting example"}
-
-include_graphics("boxplot_pre_cleaning.jpeg")
-
-```
 
 ```{r}
 
@@ -243,12 +238,12 @@ saveRDS(temp_imputed2, file = "impute.Rdata")
 densityplot(temp_imputed1, drop.unused.levels = TRUE) # Save plots again
 
 densityplot(temp_imputed2, drop.unused.levels = TRUE) # Save plots again
-
+?densityplot
 # Running the imputations and generating density plots of the imputed values is higly time consuming. Therefore, we upload the saved files and  plots instead. 
 # See appendix for plots. 
 ```
 
-```{r, include = FALSE, include=FALSE}
+```{r, include = FALSE}
 
 temp_imputed1 <- readRDS(file = "imputeMEAN.Rdata")
 temp_imputed2 <- readRDS(file = "impute.Rdata")
@@ -292,14 +287,18 @@ df_cleaned %>%
   gather(metric, value, -default) %>% 
   ggplot(aes(x= default, y=value, fill = default))+
   geom_boxplot(show.legend = FALSE) +
-  facet_wrap(~ metric, scales = "free")
+  facet_wrap(~ metric, scales = "free") +
+  ggtitle("Boxplot of the distibution after cleaning") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 df_cleaned %>% 
   select_if(is.numeric) %>% 
   gather(metric, value) %>% 
   ggplot(aes(value, fill = metric))+
   geom_density(show.legend = FALSE) +
-  facet_wrap(~ metric, scales = "free")
+  facet_wrap(~ metric, scales = "free") +
+  ggtitle("Density plot of the distibution after cleaning") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 
 # Running this chunk is time consuming, and we have therefore saved the figures. They are reloaded in the chunk below.  
@@ -366,7 +365,7 @@ corr_check <- function(data, threshold){
 }
 
 
-cor_mat <- corr_check(cor_df, 0.6)
+cor_mat <- corr_check(cor_df, 0.5)
 
 train_data <- train_data %>% 
   select(-operating_margin, -liquidity_ratio_1, -liquidity_ratio_2, -EBITDA_margin, -equity)
@@ -421,9 +420,9 @@ A confusion matrix from the glm model is presented in table xx.
 Figure xx shows the AUC for the glm model. 
 - Comments: 
 
+\pagebreak
 
-
-```{r, cache= TRUE}
+```{r, cache= FALSE}
 
 #set eval true later
 
@@ -438,13 +437,13 @@ model_glm <- train(default ~.,
 
 
 
-```{r}
+```{r var_imp_GLM, fig.cap="\\label{fig:var_imp_GLM}Variable importance"}
 
 summary_glm <- xtable(summary(model_glm), caption = "Summary glm model")
 
 print(summary_glm, scalebox=1, caption.placement = "bottom", label = "tab:sumtable")
 
-plot(varImp(model_glm))
+plot(varImp(model_glm), main = "Variables Importance GLM")
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
@@ -468,7 +467,7 @@ print(performance_glm, scalebox = 1, caption.placement = "bottom", label = "tab:
 ```
 
 
-```{r}
+```{r ROC_glm, fig.cap="\\label{fig:ROC_glm}ROC plot for glm logistic"}
 
 # ROC curve glm
 
@@ -518,7 +517,7 @@ The model's confusion matrics is presented in figure xx, and the ROC curve is pr
 - Discuss performance 
 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 
 ############################ Model 2: Random Forest ######################################
 
@@ -531,7 +530,6 @@ set.seed(1)
 model_rf <- caret::train(default ~ .,
                          data = train_data,
                          method = "ranger",
-                         preProcess = c("scale", "center"),
                          trControl = ctrl,
                          tuneGrid = tunegrid,
                          num.trees = 100,
@@ -547,18 +545,17 @@ model_rf <- caret::train(default ~ .,
 \pagebreak
 
 
+```{r var_imp_rf, fig.cap="\\label{fig:var_imp_rf}Variables importance Random Forest"}
 
-```{r}
-
-model_rf <- readRDS("rf.Rdata")
+# model_rf <- readRDS("rf.Rdata")
 
 rf_pred <- data.frame(actual = test_data$default,
                        predict(model_rf, newdata = test_data, type = "prob"))
-
+head(rf_pred, 30)
 rf_pred$predict <- ifelse(rf_pred$Yes > 0.5, "Yes", "No")
 rf_pred$predict <- as.factor(rf_pred$predict)
 
-plot(varImp(model_rf))
+plot(varImp(model_rf),main = "Variables Importance Random Forest")
 
 cm_rf <- confusionMatrix(rf_pred$predict, test_data$default)
 
@@ -582,7 +579,7 @@ How well the model performs relative to glm
 Accuracy, specificity and sensitivity etc.
 
 
-```{r}
+```{r ROC_rf, fig.cap="\\label{fig:ROC_rf}ROC plot for Random Forest"}
 
 # ROC curve rf
 
@@ -627,7 +624,7 @@ test_rf %>%
 
 # xgBoost
 
-```{r, eval = FALSE}
+```{r, eval = TRUE}
 #Model 3: Xgboost
 
 xgb_grid <- expand.grid(nrounds = 250,
@@ -644,7 +641,6 @@ model_xgb <- caret::train(default ~ .,
                           data = train_data,
                           method = "xgbTree",
                           tuneGrid =xgb_grid,
-                          preProcess = c("scale", "center"),
                           trControl = ctrl)
 
 # Check preProcess - is this necessary, is it right, or is it wrong??
@@ -654,7 +650,7 @@ model_xgb <- caret::train(default ~ .,
 ```
 
 ```{r}
-model_xgb <- readRDS("xgb.Rdata")
+# model_xgb <- readRDS("xgb.Rdata")
 
 plot(varImp(model_xgb))
 
@@ -732,7 +728,7 @@ Precision and recall are two extremely important model evaluation metrics. While
 
 \pagebreak
 
-```{r, cache= TRUE}
+```{r model_comp, cache= TRUE, fig.cap="\\label{fig:model_comp}Comparing models with Accuracy and Kappa"}
 
 
 # Look at the performance
@@ -743,7 +739,7 @@ models <- list(glm = model_glm,
 
 resampling <- resamples(models)
 
-bwplot(resampling)
+bwplot(resampling, main = "Comparing of the models")
 
 comp_table <- summary(resampling) 
 
@@ -758,8 +754,24 @@ caption_at_bottom(stargazer(comp_table$statistics$Kappa, header = FALSE, title =
 
 # Assignment 5
 
-```{r}
+## 5.1. RWA interpretation
 
+Risk-weighted asset (RWA) is defined as an aggregated measure, which evaluates amount of regulatory capital that must be reserved by banks or financial institutions to maintain their solvency. RWA is used to: 
+
+(i) provide a common measure for a bank’s risks; 
+(ii) ensure that capital allocated to assets is commensurate with the risks; and
+(iii) potentially highlight where destabilizing asset class bubbles are arising.
+
+To be clearer, RWA shows how many percentage the bank can absorb losses by comparing the amount of a bank’s capital with the amount of its assets. For example, if its capital is 10% of its assets, then it can lose 10% of its assets without becoming insolvent.
+
+There are rules for risk weighting. Basel I framework, which was set by the global banking regulator, BCBS, used a comparatively simple system. Each class of asset was assigned a fixed risk weight. In 2004, the framework was updated with Basel II and brought a significant innovation with IRB approach. In this framework, a different classification of assets are used to weigh the asset. For particular, probability of default (PD) is the key input for RWA. Total risk-weighted assets are determined by multiplying the capital requirements for market risk and operational risk by 12.5.
+When getting their own RWA values, banks have a broad analysis whether they are still capable of taking on more risks. 
+
+## 5.2. RWA calculation
+
+Understanding the definition of RWA, we now continue to apply it for our dataset. To calculate the RWA, the prediction models in the assignment are used for the results of PD for each customer.
+
+```{r, cache= TRUE}
 
 #define values of some constants
 
@@ -768,54 +780,74 @@ EAD = 100
 M = 2.5
 S = 50
 
-rf_pred
+
 #calculate RWA according to RWA formula and glm 
 
-glm <- data.frame(R = 0.12*(1-exp(-50*glm_predictions$Yes))/(1-exp(-50)) +
-                   0.24*(1-(1-exp(-50*glm_predictions$Yes))/(1-exp(-50))))
+glm <- data.frame(R = 0.12*((1-exp(-50*glm_predictions$Yes))/(1-exp(-50))) +
+                   0.24*(1-(1-exp(-50*glm_predictions$Yes))/(1-exp(-50))) - 0.04 * ((1-(S-5))/45))
+
 
 glm$b = (0.11852 - 0.05478*ln(glm_predictions$Yes))^2
 
-glm$K = (LGD*pnorm(1-glm$R)^(-0.5)*qnorm(glm_predictions$Yes) + 
-          ((glm$R/(1-glm$R)^0.5)*qnorm(0.999)) - glm_predictions$Yes*LGD)*
-  (1-1.5*glm$b)^(-1)*(1+(M-2.5)*glm$b)
+glm$K = (LGD*pnorm(((1-glm$R)^(-0.5))*qnorm(glm_predictions$Yes) + 
+          ((glm$R/(1-glm$R))^0.5)*qnorm(0.999)) - glm_predictions$Yes*LGD)*
+  ((1-1.5*glm$b)^(-1))*(1+((M-2.5)*glm$b))
 
 glm$RWA = glm$K*12.5*EAD
 
 #calculate RWA according to RWA formula and random forest
 
-rf <- data.frame(R = 0.12*(1-exp(-50*rf_predictions$Yes))/(1-exp(-50)) +
-                   0.24*(1-(1-exp(-50*rf_predictions$Yes))/(1-exp(-50))))
+rf <- data.frame(R = 0.12*((1-exp(-50*rf_predictions$Yes))/(1-exp(-50))) +
+                   0.24*(1-(1-exp(-50*rf_predictions$Yes))/(1-exp(-50))) - 0.04 * ((1-(S-5))/45))
 
 rf$b = (0.11852 - 0.05478*ln(rf_predictions$Yes))^2
 
-rf$K = (LGD*pnorm(1-rf$R)^(-0.5)*qnorm(rf_predictions$Yes) + 
-          ((rf$R/(1-rf$R)^0.5)*qnorm(0.999)) - rf_predictions$Yes*LGD)*
-  (1-1.5*rf$b)^(-1)*(1+(M-2.5)*rf$b)
+rf$K = (LGD*pnorm(((1-rf$R)^(-0.5))*qnorm(rf_predictions$Yes) + 
+          ((rf$R/(1-rf$R))^0.5)*qnorm(0.999)) - rf_predictions$Yes*LGD)*
+  ((1-1.5*rf$b)^(-1))*(1+((M-2.5)*rf$b))
 
 rf$RWA = rf$K*12.5*EAD
 
 #calculate RWA according to RWA formula and xgboost
 
-xgb <- data.frame(R = 0.12*(1-exp(-50*xgb_predictions$Yes))/(1-exp(-50)) +
-                   0.24*(1-(1-exp(-50*xgb_predictions$Yes))/(1-exp(-50))))
+xgb <- data.frame(R = 0.12*((1-exp(-50*xgb_predictions$Yes))/(1-exp(-50))) +
+                   0.24*(1-(1-exp(-50*xgb_predictions$Yes))/(1-exp(-50))) - 0.04 * ((1-(S-5))/45))
 
 xgb$b = (0.11852 - 0.05478*ln(xgb_predictions$Yes))^2
 
-xgb$K = (LGD*pnorm(1-xgb$R)^(-0.5)*qnorm(xgb_predictions$Yes) + 
-          ((xgb$R/(1-xgb$R)^0.5)*qnorm(0.999)) - xgb_predictions$Yes*LGD)*
-  (1-1.5*xgb$b)^(-1)*(1+(M-2.5)*xgb$b)
+xgb$K = (LGD*pnorm(((1-xgb$R)^(-0.5))*qnorm(xgb_predictions$Yes) + 
+          ((xgb$R/(1-xgb$R))^0.5)*qnorm(0.999)) - xgb_predictions$Yes*LGD)*
+  ((1-1.5*xgb$b)^(-1))*(1+((M-2.5)*xgb$b))
 
 xgb$RWA = xgb$K*12.5*EAD
 
 
 #Compare the RWA in each model
 
-library(gridExtra)
-
 RWA_models <- data.frame(RWA_glm = glm$RWA,
                RWA_rf = rf$RWA,
                RWA_xgb = xgb$RWA)
+
+
+caption_at_bottom(stargazer(RWA_models, header = FALSE, title  = "RWA comparison"))
+
+```
+
+After that, we base on the formula advised as below to get the RWA needed. 
+
+
+$Correlation (R) = 0.12\cdot\frac{1-exp(-50 \cdot PD)}{1-exp(-50)}+0.24 \cdot [1-\frac{1-exp(-50 \cdot PD)}{1-exp(-50)}]-0.04 \cdot \frac{1-(s-5)}{45}$
+
+
+$Maturity \space adjustment (b) = (0.11852-0.05478 \cdot ln(PF))^2$
+
+
+$Capital \space requirement = [LGD \cdot N [(1-R)^{-0.5} \cdot G(PD) + (\frac{R}{1-R})^{0.5}\cdot G(0.999)]-PD \cdot LGD]\cdot (1-1.5 \cdot b)^{-1}\cdot(1+(M-2.5)\cdot b)$
+
+
+$Risk - weighted\space asssets\space(RWA) = K \cdot 12.5 \cdot EAD$
+
+```{r rwa_plots, fig.cap="\\label{fig:rwa_plots} RWA comparison"}
 
 p_glm <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) + 
             geom_line(aes(y = RWA_glm), color = "steelblue") +
@@ -823,8 +855,7 @@ p_glm <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) +
             theme(plot.title = element_text(hjust = 0.5)) +
             ylab("RWA") +
             xlab("")
-     
-        
+
 
 p_rf <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) +
             geom_line(aes(y = RWA_rf), color="darkgreen") +
@@ -841,11 +872,13 @@ p_xgb <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) +
             ylab("RWA") +
             xlab("")
      
-caption_at_bottom(stargazer(RWA_models, header = FALSE))
-
 grid.arrange(p_glm, p_rf, p_xgb, nrow = 3)
 
 ```
+
+According to the summary table and the plots for each models, logistic regression model yields lowest RWA while those of random forest are the largest. Interpreted from the construction of the formula above, RWA covariates with PD. The more chances it is that customer will make a default on paying debt, the more assets bank or financial institutions should hold to avoid insolvency. However, the relationship is not proportional, and a high increase in the PD will typically translate into a more moderate increase in RWA. Therefore, it is understandable for logistic regression model to have lowest RWA since PD under that model is also the lowest. 
+
+\pagebreak
 
 # Appendix
 
