@@ -199,8 +199,8 @@ remove_outliers_na <- function(x) { # To be used on other variables
   y
 }
 
-# Strategy: We set NA on all outliers that are less then 0.025 and more than 0.975 the quantiles. 
-#           This is done for all numeric variables except age_of_company, gross_operarting_inc_perc, paid_debt_collection and unpaid_debt collection.
+# Strategy: Replace observarions exceeding treshold values of 0.025 (lower bound) 0.975 (upper bound) with NA. This is done for all numeric variables except from age_of_company, gross_operating_inc_perc, paid_debt_collection and unpaid_debt collection.
+
 #           paid and unpaid debt collection will be categorized.
 
 df_corp$profit_margin <- remove_outliers_na(df_corp$profit_margin)
@@ -229,9 +229,6 @@ df_corp <- df_corp %>%
   select(-equity_ratio_stability) # Removed due to collinearity and if look at the earlier plots it make sense.
 
 ```
-
-Figure \ref{fig:boxpot_post_cleaning} and \ref{fig:density_post_cleaning} contain box- and density plots of the numeric variables in our data set after cleaning:
-
 After cleaning the data set, we are left with xx missing values. As these account for a substantial fraction of the total number of observations in the data set, we choose to impute these using the MICE package. An illustration and explanation of the imputation added to the appendix.
 
 - Write some more about the imputation method.
@@ -272,11 +269,11 @@ df_cleaned <- complete_imputed
 
 ```
 
-Dummifying variables etc etc. 
-- Write a bit more here. 
-
+A final step is to make sure all variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorized variables. This is due to their distribution, that includes many extreme values despite our previous cleaning. These are therefore coded as dummuies.
 
 ```{r, include = FALSE, cache= TRUE}
+
+# Generating dummies for paid and unpaid debt collection
 
 df_cleaned$unpaid_debt_collection <- ifelse(df_cleaned$unpaid_debt_collection > 0, yes = 1, no = 0) # 1 = have unpaid debt collection
 
@@ -292,9 +289,8 @@ xtable(table1)
 xtable(table2)
 
 ```
- 
+After cleaning, imputing and reclassifying our variables, we are left with data that is well suited for prediction modelling. Figure xx shows the distribution of the variables in our new dataset that will be used moving forward.
 
- 
 ```{r Boxplot_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Boxplot_post_cleaning}Boxplot after cleaning"}
 
 # Boxplot after cleaning
@@ -323,27 +319,30 @@ df_cleaned %>%
   geom_density(show.legend = FALSE) +
   facet_wrap(~ metric, scales = "free")
 
-
-# Running this chunk is time consuming, and we have therefore saved the figures. They are reloaded in the chunk below.  
-
 ```
 
 
 ##Prediction modelling
 
+In this section we will train and rund three different prediction models; a Logistic Regression Model, a Random Forest and a Xgboost Model. 
+
 ### Preparations
 
-Prior to training our prediction models, we run the data set through a function which detects whether any of the variables correlate. It turns out that the variables \textit{total assets}, \textit{revenue}, \textit{industry} and \textit{paid debt collection} correlate with one or more of the other variables. To avoid multicollinearity, these variables are removed from the data set.  
+
+
+Prior to training our models, need to consider potential correlation between the variables in our dataset. This is done by running a logistic regression and letting R calculate the VIF for the different different independent variables. The variables
+ \textit{operating margin} and \textit{xxx} have VIF values of xxx and xxx, respectively, and we therefore choose to leave these out when we train our logistic regression model in section xx.  
+ 
 
 ```{r, include = FALSE}
 
-# For all models we will remove the equity, total_assets, revenue and amount_unpaid_dept because we want to work with relativ values.
+# For all models we will remove the equity, total_assets, revenue and amount_unpaid_dept because we want to work with relative values.
 
 df_reduced <- df_cleaned %>% 
   select(-equity, -total_assets, -revenue, -amount_unpaid_debt)
 
-# Last thing we do before we split the data and start modelling is checking for mulitcolinarity.
-# To do this we will be using vic function in car package.
+# Last thing we do before we split the data and start modelling is checking for mulitcollinearity.
+# To do this we will be using vic function in the car package.
 
 library(car)
 
@@ -355,7 +354,7 @@ mc_vif_1
 
 mc_vif_2 <- vif(glm(default ~ .-operating_margin, data = df_reduced, family = "binomial"))
 
-mc_vif_2 # By checking again all looks okey
+mc_vif_2 # By checking again all looks okay
 
 # Stepwise
 
