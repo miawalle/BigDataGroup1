@@ -66,10 +66,10 @@ The first thing we notice is that some variables are classified as numeric when 
 
 Table xx displays summary statistics of our data. As shown in the table, the value xx is present in many of the observations. Most likely, these values represent measurement errors or missing variables, and we therefore choose to replace these values with NAs. After completing this step, there are still some quite extreme outliers remaining in the data. Our assessment is that these values do not represent real observations, as they deviate from typical values for the financial key figures represented in the variables in question. Applying a threshold of 2,5 percent at each end of the variables' distribution, we replace values exceeding this threshold with NAs.  
 
-We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
-
-
 ```{r, cache= TRUE}
+
+
+# Summary statistics 
 
 caption_at_bottom <- function(expr) {
   x <- capture.output(expr)
@@ -85,10 +85,15 @@ caption_at_bottom <- function(expr) {
 
 caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max"),header = FALSE, title  = "Summary statistics"))
 
+# As described in the text, outliers are replaced with NA's. See chunch no. xx. 
+
 ```
 
+We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
 
 ```{r hist, cache=TRUE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
+
+# Distribution of defaults and not defaults
 
 df_corp$default <- as.factor(df_corp$default) 
 
@@ -103,18 +108,17 @@ df_corp %>%
 
 ```{r, cache= TRUE, include = FALSE}
 
+# Mia: Should we consider removing some of these lines? 
+
 # Look at the distribution and recategorize the factor classes
 
 # Adverse_audit_opinion
-
-
 xtable(table(df_corp$default, df_corp$adverse_audit_opinion))
 
 df_corp$adverse_audit_opinion <- 
   ifelse(df_corp$adverse_audit_opinion == 0, yes = 0, no = 1)
 
 xtable(table(df_corp$default, df_corp$adverse_audit_opinion)) # If you got any Adverse audit opinons then its show as 1
-
 
 # Industry
 
@@ -123,6 +127,11 @@ xtable(table(df_corp$default, df_corp$industry)) # As we don't know anything abo
 # Payment_reminders
 
 xtable(table(df_corp$default, df_corp$payment_reminders)) # Ok
+
+```
+
+
+```{r}
 
 # Change classes
 
@@ -134,15 +143,20 @@ df_corp$total_assets <- as.numeric(df_corp$total_assets)
 df_corp$revenue <- as.numeric(df_corp$revenue)
 df_corp$age_of_company <- as.numeric(df_corp$age_of_company)
 
+```
 
-# Take a closer look on the distribution of the values we belive is errors
+```{r}
+
+# Replacing outliers with NA
+
+
+# First: Take a closer look at the distribution of the values we belive are errors
 
 x <- df_corp %>% 
   select_if(is.numeric)
 
 placeholder <- matrix(ncol=ncol(x), nrow=1)
 colnames(placeholder) <- names(x)
-
 
 
 for(i in 1:ncol(x)){
@@ -155,13 +169,15 @@ for(i in 1:ncol(x)){
 as.data.frame(placeholder/nrow(df_corp)) %>%
   gather() %>% 
   xtable()
+# Do we want to mention this fraction in the text?
 
-# Changes the obvious errors to NA
+# Change the obvious errors to NA
 
 df_corp[df_corp < -1000000000000000] <- NA 
 df_corp[df_corp >  1000000000000000] <- NA
 
 caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE, title = "Summary statistics"))
+# Remove this as we do not use it for the report?
 
 ```
 
@@ -176,8 +192,6 @@ df_corp %>%
   ggplot(aes(x= default, y=value, fill = default))+
   geom_boxplot(show.legend = FALSE) +
   facet_wrap(~ metric, scales = "free")
-
-# We definitly need to do something about those outliers, only gross_operating_inc_perc and age_of_company seems to be okay.
 
 # These boxplots can be viewed in the appendix.
 
@@ -229,11 +243,18 @@ df_corp <- df_corp %>%
   select(-equity_ratio_stability) # Removed due to collinearity and if look at the earlier plots it make sense.
 
 ```
-After cleaning the data set, we are left with xx missing values. As these account for a substantial fraction of the total number of observations in the data set, we choose to impute these using the MICE package. An illustration and explanation of the imputation added to the appendix.
+After cleaning the data set, we are left with xx missing values. As these account for a substantial fraction of the total number of observations in the data set, we choose to impute these using the MICE package. 
+
+- PMM imputation: Explain this. 
+- Why is this better than replacing NA with mean or meadian. 
+
+An illustration of the imputation added to the appendix.
 
 - Write some more about the imputation method.
 
 ```{r,fig.asp=1, fig.width = 14, eval=FALSE}
+
+# Imputing NAs
 
 temp_imputed1 <- mice(df_corp, m=2,maxit=3,meth='mean',seed=500)
 
@@ -247,11 +268,15 @@ densityplot(temp_imputed1, drop.unused.levels = TRUE) # Save plots again
 
 densityplot(temp_imputed2, drop.unused.levels = TRUE) # Save plots again
 ?densityplot
-# Running the imputations and generating density plots of the imputed values is higly time consuming. Therefore, we upload the saved files and  plots instead. 
+
+# Running the imputations and generating density plots of the imputed values is higly time consuming. Therefore, we have saved these files and will upload them in chunk xx. 
+
 # See appendix for plots. 
 ```
 
 ```{r, include = FALSE, cache= TRUE}
+
+# Uploading imputed values
 
 temp_imputed1 <- readRDS(file = "imputeMEAN.Rdata")
 temp_imputed2 <- readRDS(file = "impute.Rdata")
@@ -269,15 +294,15 @@ df_cleaned <- complete_imputed
 
 ```
 
-A final step is to make sure all variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorized variables. This is due to their distribution, that includes many extreme values despite our previous cleaning. These are therefore coded as dummuies.
+A final step is to make sure all variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorized variables. This is due to their distribution, that includes many extreme values despite our previous cleaning. These are therefore coded as dummies.
 
 ```{r, include = FALSE, cache= TRUE}
 
 # Generating dummies for paid and unpaid debt collection
 
-df_cleaned$unpaid_debt_collection <- ifelse(df_cleaned$unpaid_debt_collection > 0, yes = 1, no = 0) # 1 = have unpaid debt collection
+df_cleaned$unpaid_debt_collection <- ifelse(df_cleaned$unpaid_debt_collection > 0, yes = 1, no = 0) # 1 = Companies that have unpaid debt collection
 
-df_cleaned$paid_debt_collection <- ifelse(df_cleaned$paid_debt_collection > 0, yes = 1, no = 0) # 1 = have previously had debt collection
+df_cleaned$paid_debt_collection <- ifelse(df_cleaned$paid_debt_collection > 0, yes = 1, no = 0) # 1 = Companies that have previously had debt collection
 
 df_cleaned$paid_debt_collection <- as.factor(df_cleaned$paid_debt_collection)
 df_cleaned$unpaid_debt_collection <- as.factor(df_cleaned$unpaid_debt_collection)
@@ -290,22 +315,6 @@ xtable(table2)
 
 ```
 After cleaning, imputing and reclassifying our variables, we are left with data that is well suited for prediction modelling. Figure xx shows the distribution of the variables in our new dataset that will be used moving forward.
-
-```{r Boxplot_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Boxplot_post_cleaning}Boxplot after cleaning"}
-
-# Boxplot after cleaning
-
-df_cleaned %>% 
-  select(which(sapply(.,class)=="numeric"),default) %>%   
-  gather(metric, value, -default) %>% 
-  ggplot(aes(x= default, y=value, fill = default))+
-  geom_boxplot(show.legend = FALSE) +
-  facet_wrap(~ metric, scales = "free")
-
-#This can be viewed in the appendix.
-
-```
-
 
 ```{r Density_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Density_post_cleaning}Density plot after cleaning"}
 
@@ -321,6 +330,20 @@ df_cleaned %>%
 
 ```
 
+```{r Boxplot_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Boxplot_post_cleaning}Boxplot after cleaning", include=FALSE}
+
+# Boxplot after cleaning
+
+df_cleaned %>% 
+  select(which(sapply(.,class)=="numeric"),default) %>%   
+  gather(metric, value, -default) %>% 
+  ggplot(aes(x= default, y=value, fill = default))+
+  geom_boxplot(show.legend = FALSE) +
+  facet_wrap(~ metric, scales = "free")
+
+#This can be viewed in the appendix.
+
+```
 
 ##Prediction modelling
 
