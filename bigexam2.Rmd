@@ -64,6 +64,11 @@ In this section, we will train and rund three different prediction models based 
 The first thing we notice is that some variables are classified as numeric when they should be factor variables, and vice versa. We reclassify these variables. 
 
 
+Table xx displays summary statistics of our data. As shown in the table, the value xx is present in many of the observations. Most likely, these values represent measurement errors or missing variables, and we therefore choose to replace these values with NAs. After completing this step, there are still some quite extreme outliers remaining in the data. Our assessment is that these values do not represent real observations, as they deviate from typical values for the financial key figures represented in the variables in question. Applying a threshold of 2,5 percent at each end of the variables' distribution, we replace values exceeding this threshold with NAs.  
+
+We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
+
+
 ```{r, cache= TRUE}
 
 caption_at_bottom <- function(expr) {
@@ -82,9 +87,6 @@ caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max"),header = FALS
 
 ```
 
-Table xx displays summary statistics of our data. As shown in the table, the value xx is present in many of the observations. Most likely, these values represent measurement errors or missing variables, and we therefore choose to replace these values with NAs. After completing this step, there are still some quite extreme outliers remaining in the data. Our assessment is that these values do not represent real observations, as they deviate from typical values for the financial key figures represented in the variables in question. Applying a threshold of 2,5 percent at each end of the variables' distribution, we replace values exceeding this threshold with NAs.  
-
-We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
 
 ```{r hist, cache=TRUE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
 
@@ -113,6 +115,7 @@ df_corp$adverse_audit_opinion <-
 
 xtable(table(df_corp$default, df_corp$adverse_audit_opinion)) # If you got any Adverse audit opinons then its show as 1
 
+
 # Industry
 
 xtable(table(df_corp$default, df_corp$industry)) # As we don't know anything about the type of industry we let it be
@@ -139,6 +142,8 @@ x <- df_corp %>%
 
 placeholder <- matrix(ncol=ncol(x), nrow=1)
 colnames(placeholder) <- names(x)
+
+
 
 for(i in 1:ncol(x)){
   placeholder[,i] <- ifelse(x[,i] > 100000000000 , yes = 1 , 
@@ -173,6 +178,8 @@ df_corp %>%
   facet_wrap(~ metric, scales = "free")
 
 # We definitly need to do something about those outliers, only gross_operating_inc_perc and age_of_company seems to be okay.
+
+# These boxplots can be viewed in the appendix.
 
 ```
 
@@ -223,6 +230,12 @@ df_corp <- df_corp %>%
 
 ```
 
+Figure \ref{fig:boxpot_post_cleaning} and \ref{fig:density_post_cleaning} contain box- and density plots of the numeric variables in our data set after cleaning:
+
+After cleaning the data set, we are left with xx missing values. As these account for a substantial fraction of the total number of observations in the data set, we choose to impute these using the MICE package. An illustration and explanation of the imputation added to the appendix.
+
+- Write some more about the imputation method.
+
 ```{r,fig.asp=1, fig.width = 14, eval=FALSE}
 
 temp_imputed1 <- mice(df_corp, m=2,maxit=3,meth='mean',seed=500)
@@ -259,6 +272,10 @@ df_cleaned <- complete_imputed
 
 ```
 
+Dummifying variables etc etc. 
+- Write a bit more here. 
+
+
 ```{r, include = FALSE, cache= TRUE}
 
 df_cleaned$unpaid_debt_collection <- ifelse(df_cleaned$unpaid_debt_collection > 0, yes = 1, no = 0) # 1 = have unpaid debt collection
@@ -276,9 +293,11 @@ xtable(table2)
 
 ```
  
+
+ 
 ```{r Boxplot_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Boxplot_post_cleaning}Boxplot after cleaning"}
 
-# Looking at the distribution again
+# Boxplot after cleaning
 
 df_cleaned %>% 
   select(which(sapply(.,class)=="numeric"),default) %>%   
@@ -287,10 +306,15 @@ df_cleaned %>%
   geom_boxplot(show.legend = FALSE) +
   facet_wrap(~ metric, scales = "free")
 
+#This can be viewed in the appendix.
+
 ```
 
 
 ```{r Density_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Density_post_cleaning}Density plot after cleaning"}
+
+# Density plot after cleaning
+
 
 df_cleaned %>% 
   select_if(is.numeric) %>% 
@@ -304,20 +328,12 @@ df_cleaned %>%
 
 ```
 
-Figure \ref{fig:boxpot_post_cleaning} and \ref{fig:density_post_cleaning} contain box- and density plots of the numeric variables in our data set after cleaning:
-
-After cleaning the data set, we are left with xx missing values. As these account for a substantial fraction of the total number of observations in the data set, we choose to impute these using the MICE package. An illustration and explanation of the imputation added to the appendix.
-
 
 ##Prediction modelling
 
 ### Preparations
 
-
-XXX Blalala the data is split into a training set and a test set.
-
 Prior to training our prediction models, we run the data set through a function which detects whether any of the variables correlate. It turns out that the variables \textit{total assets}, \textit{revenue}, \textit{industry} and \textit{paid debt collection} correlate with one or more of the other variables. To avoid multicollinearity, these variables are removed from the data set.  
-
 
 
 
