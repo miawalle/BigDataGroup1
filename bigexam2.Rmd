@@ -533,7 +533,7 @@ model_rf <- caret::train(default ~ .,
 
 rf_pred <- data.frame(actual = test_data$default,
                        predict(model_rf, newdata = test_data, type = "prob"))
-head(rf_pred, 30)
+
 rf_pred$predict <- ifelse(rf_pred$Yes > 0.5, "Yes", "No")
 rf_pred$predict <- as.factor(rf_pred$predict)
 
