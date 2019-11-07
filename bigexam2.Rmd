@@ -329,7 +329,6 @@ In this section we will train and rund three different prediction models; a Logi
 ### Preparations
 
 
-
 Prior to training our models, need to consider potential correlation between the variables in our dataset. This is done by running a logistic regression and letting R calculate the VIF for the different different independent variables. The variables
  \textit{operating margin} and \textit{xxx} have VIF values of xxx and xxx, respectively, and we therefore choose to leave these out when we train our logistic regression model in section xx.  
  
