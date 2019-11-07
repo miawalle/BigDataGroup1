@@ -335,13 +335,42 @@ df_cleaned %>%
 
 Prior to training our prediction models, we run the data set through a function which detects whether any of the variables correlate. It turns out that the variables \textit{total assets}, \textit{revenue}, \textit{industry} and \textit{paid debt collection} correlate with one or more of the other variables. To avoid multicollinearity, these variables are removed from the data set.  
 
-
-
 ```{r, include = FALSE}
 
-df_reduced <- df_cleaned
+# For all models we will remove the equity, total_assets, revenue and amount_unpaid_dept because we want to work with relativ values.
+
+df_reduced <- df_cleaned %>% 
+  select(-equity, -total_assets, -revenue, -amount_unpaid_debt)
+
+# Last thing we do before we split the data and start modelling is checking for mulitcolinarity.
+# To do this we will be using vic function in car package.
+
+library(car)
+
+mc_vif_1 <- vif(glm(default ~ ., data = df_reduced, family = "binomial"))
+
+mc_vif_1
+
+# We see that for the glm we should remove operating margin
+
+mc_vif_2 <- vif(glm(default ~ .-operating_margin, data = df_reduced, family = "binomial"))
+
+mc_vif_2 # By checking again all looks okey
+
+# Stepwise
+
+stepwise <- step(glm(default ~ .-operating_margin, data = df_reduced, family = "binomial"), direction="both")
+
+# Removed after stepwise
+
+mc_vif_3 <- vif(glm(default ~ .-operating_margin - paid_debt_collection - liquidity_ratio_1 - profit_margin, data = df_reduced, family = "binomial"))
+
+mc_vif_3
+
+# Split data in to train/test
 
 set.seed(1)
+
 index <- createDataPartition(df_reduced$default, p = 0.7, list = FALSE)
 train_data <- df_reduced[index, ]
 test_data <- df_reduced[-index, ]
@@ -349,34 +378,6 @@ test_data <- df_reduced[-index, ]
 # Check
 
 nrow(train_data) + nrow(test_data) == nrow(df_reduced)
-
-
-# We first check the correlation between the numeric variables
-
-cor_df <- train_data %>% 
-  select_if(is.numeric)
-
-# Make a function that print variables that correlates more than a threshold
-
-corr_check <- function(data, threshold){
-  mat_cor <- cor(data)
-  mat_cor
-  
-  for (i in 1:nrow(mat_cor)){
-    correlations <-  which((abs(mat_cor[i,i:ncol(mat_cor)]) > threshold) & (mat_cor[i,i:ncol(mat_cor)] != 1))
-    
-    if(length(correlations)> 0){
-      lapply(correlations,FUN =  function(x) (cat(paste(colnames(data)[i], "with",colnames(data)[x]), "\n")))
-      
-    }
-  }
-}
-
-
-cor_mat <- corr_check(cor_df, 0.5)
-
-train_data <- train_data %>% 
-  select(-operating_margin, -liquidity_ratio_1, -liquidity_ratio_2, -EBITDA_margin, -equity)
 
 ```
 
@@ -393,11 +394,6 @@ xtable(rbind(`Train defaults`,`Test defaults`))
 ```{r, cache= TRUE}
 
 ############# Making some models ###################
-
-# Removed variables
-
-train_data <- train_data %>% 
-  select(-total_assets, -revenue, -industry, -paid_debt_collection)
 
 ctrl <- trainControl(method = "repeatedcv", 
                      number = 10, 
@@ -432,11 +428,17 @@ Figure xx shows the AUC for the glm model.
 
 ```{r, cache= TRUE}
 
-#set eval true later
+# After we have runned the model we see that industry and gross have some insignificant values,
+# we try to remove gross and ndustry one by one and together. We got lowest AIC by only removing
+# gross_operating_inc_perc. 
 
 set.seed(1)
 
-model_glm <- train(default ~.,
+model_glm <- train(default ~ .- operating_margin 
+                              - paid_debt_collection 
+                              - liquidity_ratio_1 
+                              - profit_margin
+                              - gross_operating_inc_perc,
                    data = train_data,
                    method = "glm",
                    trControl = ctrl)
@@ -603,8 +605,6 @@ test_rf %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 
-# Running the model is highly time consuming.
-#blablabla we run the saved file instead
 
 ```
 
@@ -661,7 +661,7 @@ performance_xgb <- xtable(perf_xgb, caption = "Performance indicators xgboost")
 
 print(performance_xgb, scalebox = 1, caption.placement= "bottom", label = "tab:performance_xgb")
 
-````
+```
 
 ```{r ROC_xgb, Cache = TRUE, fig.cap="\\label{fig:ROC_xgb}ROC plot for Xgboost"}
 
@@ -882,7 +882,7 @@ According to the summary table and the plots for each models, logistic regressio
 
 ### load images 
 
-include_graphics('imputation_pmm.jpeg')
+include_graphics('imputation_mean.jpeg')
 
 ```
 
