@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FA
 \pagebreak
 
 
-```{r}
+```{r, cache = FALSE}
 
 library(dplyr)
 library(magrittr)
@@ -86,7 +86,7 @@ Table xx displays summary statistics of our data. As shown in the table, the val
 
 We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
 
-```{r hist, cache=TRUE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
+```{r hist, cache=FALSE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
 
 df_corp$default <- as.factor(df_corp$default) 
 
@@ -99,27 +99,27 @@ df_corp %>%
 ```
 
 
-```{r, cache= TRUE, include = FALSE}
+```{r, cache= TRUE}
 
 # Look at the distribution and recategorize the factor classes
 
 # Adverse_audit_opinion
 
 
-xtable(table(df_corp$default, df_corp$adverse_audit_opinion))
+# xtable(table(df_corp$default, df_corp$adverse_audit_opinion))
 
 df_corp$adverse_audit_opinion <- 
   ifelse(df_corp$adverse_audit_opinion == 0, yes = 0, no = 1)
 
-xtable(table(df_corp$default, df_corp$adverse_audit_opinion)) # If you got any Adverse audit opinons then its show as 1
+# xtable(table(df_corp$default, df_corp$adverse_audit_opinion)) # If you got any Adverse audit opinons then its show as 1
 
 # Industry
 
-xtable(table(df_corp$default, df_corp$industry)) # As we don't know anything about the type of industry we let it be
+# xtable(table(df_corp$default, df_corp$industry)) # As we don't know anything about the type of industry we let it be
 
 # Payment_reminders
 
-xtable(table(df_corp$default, df_corp$payment_reminders)) # Ok
+# xtable(table(df_corp$default, df_corp$payment_reminders)) # Ok
 
 # Change classes
 
@@ -147,16 +147,16 @@ for(i in 1:ncol(x)){
 }
 
 
-as.data.frame(placeholder/nrow(df_corp)) %>%
-  gather() %>% 
-  xtable()
+# as.data.frame(placeholder/nrow(df_corp)) %>%
+#  gather() %>% 
+#  xtable()
 
 # Changes the obvious errors to NA
 
 df_corp[df_corp < -1000000000000000] <- NA 
 df_corp[df_corp >  1000000000000000] <- NA
 
-caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE, title = "Summary statistics"))
+#caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max","mean","sd"), header = FALSE, title = "Summary statistics"))
 
 ```
 
@@ -241,7 +241,7 @@ densityplot(temp_imputed2, drop.unused.levels = TRUE) # Save plots again
 # See appendix for plots. 
 ```
 
-```{r, include = FALSE, cache= TRUE}
+```{r, cache= FALSE}
 
 temp_imputed1 <- readRDS(file = "imputeMEAN.Rdata")
 temp_imputed2 <- readRDS(file = "impute.Rdata")
@@ -259,20 +259,20 @@ df_cleaned <- complete_imputed
 
 ```
 
-```{r, include = FALSE, cache= TRUE}
+```{r, include = FALSE, cache= FALSE}
 
 df_cleaned$unpaid_debt_collection <- ifelse(df_cleaned$unpaid_debt_collection > 0, yes = 1, no = 0) # 1 = have unpaid debt collection
 
 df_cleaned$paid_debt_collection <- ifelse(df_cleaned$paid_debt_collection > 0, yes = 1, no = 0) # 1 = have previously had debt collection
 
-df_cleaned$paid_debt_collection <- as.factor(df_cleaned$paid_debt_collection)
-df_cleaned$unpaid_debt_collection <- as.factor(df_cleaned$unpaid_debt_collection)
+#df_cleaned$paid_debt_collection <- as.factor(df_cleaned$paid_debt_collection)
+#df_cleaned$unpaid_debt_collection <- as.factor(df_cleaned$unpaid_debt_collection)
 
-table1 <- table(df_cleaned$default, df_cleaned$unpaid_debt_collection)
-table2 <- table(df_cleaned$default, df_cleaned$paid_debt_collection)
+#table1 <- table(df_cleaned$default, df_cleaned$unpaid_debt_collection)
+#table2 <- table(df_cleaned$default, df_cleaned$paid_debt_collection)
 
-xtable(table1)
-xtable(table2)
+#xtable(table1)
+#xtable(table2)
 
 ```
  
@@ -318,12 +318,16 @@ XXX Blalala the data is split into a training set and a test set.
 
 Prior to training our prediction models, we run the data set through a function which detects whether any of the variables correlate. It turns out that the variables \textit{total assets}, \textit{revenue}, \textit{industry} and \textit{paid debt collection} correlate with one or more of the other variables. To avoid multicollinearity, these variables are removed from the data set.  
 
-```{r, include = FALSE}
+```{r}
 
 # For all models we will remove the equity, total_assets, revenue and amount_unpaid_dept because we want to work with relativ values.
 
 df_reduced <- df_cleaned %>% 
   select(-equity, -total_assets, -revenue, -amount_unpaid_debt)
+
+``` 
+
+```{r, include = FALSE, eval= FALSE}
 
 # Last thing we do before we split the data and start modelling is checking for mulitcolinarity.
 # To do this we will be using vic function in car package.
@@ -342,13 +346,16 @@ mc_vif_2 # By checking again all looks okey
 
 # Stepwise
 
-stepwise <- step(glm(default ~ .-operating_margin, data = df_reduced, family = "binomial"), direction="both")
+# stepwise <- step(glm(default ~ .-operating_margin, data = df_reduced, family = "binomial"), direction="both")
 
 # Removed after stepwise
 
 mc_vif_3 <- vif(glm(default ~ .-operating_margin - paid_debt_collection - liquidity_ratio_1 - profit_margin, data = df_reduced, family = "binomial"))
 
 mc_vif_3
+```
+
+```{r}
 
 # Split data in to train/test
 
@@ -426,6 +433,10 @@ model_glm <- train(default ~ .- operating_margin
                    method = "glm",
                    trControl = ctrl)
 
+# To mangage to run the latter codes due to removal of variables in the regression.
+
+
+
 ```
 
 
@@ -438,6 +449,8 @@ print(summary_glm, scalebox=1, caption.placement = "bottom", label = "tab:sumtab
 
 plot(varImp(model_glm), main = "Variables Importance GLM")
 
+
+
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
 
@@ -449,6 +462,8 @@ cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
 confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM")
 
 print(confusion_glm, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_glm")
+
+
 
 perf_glm <- as.matrix(cm_glm$byClass)
 colnames(perf_glm) <- c("Values")
@@ -528,7 +543,7 @@ model_rf <- caret::train(default ~ .,
 \pagebreak
 
 
-```{r var_imp_rf, cache = TRUE, fig.cap="\\label{fig:var_imp_rf}Variables importance Random Forest"}
+```{r var_imp_rf, cache = FALSE, fig.cap="\\label{fig:var_imp_rf}Variables importance Random Forest"}
 
 # model_rf <- readRDS("rf.Rdata")
 
@@ -587,15 +602,13 @@ test_rf %>%
   ggtitle("ROC curve Random Forest (Ranger)") +
   theme(plot.title = element_text(hjust = 0.5))
 
-
-
 ```
 
 \pagebreak
 
 # xgBoost
 
-```{r, eval = TRUE, cache= TRUE}
+```{r, eval = TRUE, cache= FALSE}
 #Model 3: Xgboost
 
 xgb_grid <- expand.grid(nrounds = 250,
@@ -620,7 +633,8 @@ model_xgb <- caret::train(default ~ .,
 
 ```
 
-```{r var_imp_xgb, Cache = TRUE, fig.cap="\\label{fig:var_imp_xgb}Variable importance Xgboost"}
+```{r var_imp_xgb, Cache = FALSE, fig.cap="\\label{fig:var_imp_xgb}Variable importance Xgboost"}
+
 # model_xgb <- readRDS("xgb.Rdata")
 
 plot(varImp(model_xgb),main = "Variables Importance Xgboost")
@@ -644,9 +658,9 @@ performance_xgb <- xtable(perf_xgb, caption = "Performance indicators xgboost")
 
 print(performance_xgb, scalebox = 1, caption.placement= "bottom", label = "tab:performance_xgb")
 
-````
+```
 
-```{r ROC_xgb, Cache = TRUE, fig.cap="\\label{fig:ROC_xgb}ROC plot for Xgboost"}
+```{r ROC_xgb, Cache = FALSE, fig.cap="\\label{fig:ROC_xgb}ROC plot for Xgboost"}
 
 # ROC curve xgb
 
@@ -694,7 +708,7 @@ Precision and recall are two extremely important model evaluation metrics. While
 
 \pagebreak
 
-```{r model_comp, cache= TRUE, fig.cap="\\label{fig:model_comp}Comparing models with Accuracy and Kappa"}
+```{r model_comp, cache= FALSE, fig.cap="\\label{fig:model_comp}Comparing models with Accuracy and Kappa"}
 
 
 # Look at the performance
@@ -737,7 +751,7 @@ When getting their own RWA values, banks have a broad analysis whether they are 
 
 Understanding the definition of RWA, we now continue to apply it for our dataset. To calculate the RWA, the prediction models in the assignment are used for the results of PD for each customer.
 
-```{r, cache= TRUE}
+```{r, cache= FALSE}
 
 #define values of some constants
 
@@ -826,7 +840,7 @@ After that, we base on the formula advised as below to get the RWA needed.
 \]
 
 
-```{r rwa_plots, cache= TRUE, fig.cap="\\label{fig:rwa_plots}RWA comparison"}
+```{r rwa_plots, cache= FALSE, fig.cap="\\label{fig:rwa_plots}RWA comparison"}
 
 p_glm <- ggplot(RWA_models, aes(x= 1:nrow(RWA_models))) + 
             geom_line(aes(y = RWA_glm), color = "steelblue") +
@@ -865,7 +879,7 @@ According to the summary table and the plots for each models, logistic regressio
 
 ### load images 
 
-include_graphics('imputation_mean.jpeg')
+include_graphics('imputation_pmm.jpeg')
 
 ```
 
@@ -873,7 +887,7 @@ include_graphics('imputation_mean.jpeg')
 
 ### load images 
 
-include_graphics('imputation_pmm.jpeg',)
+include_graphics('imputation_mean.jpeg',)
 
 ```
 
