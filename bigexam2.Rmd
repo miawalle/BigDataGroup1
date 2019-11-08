@@ -277,7 +277,7 @@ densityplot(temp_imputed2, drop.unused.levels = TRUE) # Save plots again
 # See appendix for plots. 
 ```
 
-```{r, cache= FALSE}
+```{r, include = FALSE}
 
 # Uploading imputed values
 
@@ -302,7 +302,7 @@ df_cleaned <- complete_imputed
 
 A final step is to make sure all variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorized variables. This is due to their distribution, that includes many extreme values despite our previous cleaning. These are therefore coded as dummies.
 
-```{r, include = FALSE, cache= TRUE}
+```{r, include = FALSE}
 
 # Generating dummies for paid and unpaid debt collection
 
@@ -310,8 +310,8 @@ df_cleaned$unpaid_debt_collection <- ifelse(df_cleaned$unpaid_debt_collection > 
 
 df_cleaned$paid_debt_collection <- ifelse(df_cleaned$paid_debt_collection > 0, yes = 1, no = 0) # 1 = Companies that have previously had debt collection
 
-#df_cleaned$paid_debt_collection <- as.factor(df_cleaned$paid_debt_collection)
-#df_cleaned$unpaid_debt_collection <- as.factor(df_cleaned$unpaid_debt_collection)
+df_cleaned$paid_debt_collection <- as.factor(df_cleaned$paid_debt_collection)
+df_cleaned$unpaid_debt_collection <- as.factor(df_cleaned$unpaid_debt_collection)
 
 #table1 <- table(df_cleaned$default, df_cleaned$unpaid_debt_collection)
 #table2 <- table(df_cleaned$default, df_cleaned$paid_debt_collection)
@@ -425,7 +425,7 @@ xtable(rbind(`Train defaults`,`Test defaults`))
 
 ```
 
-```{r, cache= TRUE}
+```{r}
 
 ############# Making some models ###################
 
@@ -460,7 +460,7 @@ Figure xx shows the AUC for the glm model.
 
 \pagebreak
 
-```{r, cache= TRUE}
+```{r}
 
 # After we have runned the model we see that industry and gross have some insignificant values,
 # we try to remove gross and ndustry one by one and together. We got lowest AIC by only removing
@@ -485,7 +485,7 @@ model_glm <- train(default ~ .- operating_margin
 
 
 
-```{r var_imp_GLM, cache= TRUE, fig.cap="\\label{fig:var_imp_GLM}Variable importance"}
+```{r var_imp_GLM, fig.cap="\\label{fig:var_imp_GLM}Variable importance"}
 
 summary_glm <- xtable(summary(model_glm), caption = "Summary glm model")
 
@@ -519,7 +519,7 @@ print(performance_glm, scalebox = 1, caption.placement = "bottom", label = "tab:
 ```
 
 
-```{r ROC_glm, cache= TRUE, fig.cap="\\label{fig:ROC_glm}ROC plot for glm logistic"}
+```{r ROC_glm, fig.cap="\\label{fig:ROC_glm}ROC plot for glm logistic"}
 
 # ROC curve glm
 
@@ -560,7 +560,7 @@ The model's confusion matrics is presented in figure xx, and the ROC curve is pr
 - Discuss performance 
 
 
-```{r, cache = TRUE, fig.asp=1, fig.width = 14, cache=TRUE}
+```{r, eval= FALSE, fig.asp=1, fig.width = 14}
 
 ############################ Model 2: Random Forest ######################################
 
@@ -585,9 +585,9 @@ model_rf <- caret::train(default ~ .,
 \pagebreak
 
 
-```{r var_imp_rf, cache = FALSE, fig.cap="\\label{fig:var_imp_rf}Variables importance Random Forest"}
+```{r var_imp_rf, fig.cap="\\label{fig:var_imp_rf}Variables importance Random Forest"}
 
-# model_rf <- readRDS("rf.Rdata")
+model_rf <- readRDS("rf.Rdata")
 
 rf_pred <- data.frame(actual = test_data$default,
                        predict(model_rf, newdata = test_data, type = "prob"))
@@ -619,7 +619,7 @@ How well the model performs relative to glm
 Accuracy, specificity and sensitivity etc.
 
 
-```{r ROC_rf, cache = TRUE, fig.cap="\\label{fig:ROC_rf}ROC plot for Random Forest"}
+```{r ROC_rf, fig.cap="\\label{fig:ROC_rf}ROC plot for Random Forest"}
 
 # ROC curve rf
 
@@ -650,7 +650,7 @@ test_rf %>%
 
 # xgBoost
 
-```{r, cache = TRUE, fig.asp=1, fig.width = 14, eval = TRUE, cache= FALSE}
+```{r, eval=FALSE, fig.asp=1, fig.width = 14, eval = TRUE}
 #Model 3: Xgboost
 
 xgb_grid <- expand.grid(nrounds = 300,
@@ -668,16 +668,16 @@ model_xgb <- caret::train(default ~ .,
                           method = "xgbTree",
                           tuneGrid =xgb_grid,
                           trControl = ctrl)
-model_xgb
+
 # Check preProcess - is this necessary, is it right, or is it wrong??
-plot(model_xgb)
+
 # saveRDS(model_xgb, file = "xgb.Rdata")
 
 ```
 
 ```{r var_imp_xgb, Cache = FALSE, fig.cap="\\label{fig:var_imp_xgb}Variable importance Xgboost"}
 
-# model_xgb <- readRDS("xgb.Rdata")
+model_xgb <- readRDS("xgb.Rdata")
 
 plot(varImp(model_xgb),main = "Variables Importance Xgboost")
 
@@ -730,12 +730,6 @@ test_xgb %>%
 ```
 
 \pagebreak
-
-```{r xgb_tuning, echo=FALSE, out.width='100%', fig.cap="\\label{fig:xgb_tuning}Tuning of Xgboost"}
-
-include_graphics('xgb_tuning_plot.jpeg')
-
-```
 
 Accuracy and Kappa
 These are the default metrics used to evaluate algorithms on binary and multi-class classification datasets in caret.
@@ -793,7 +787,7 @@ When getting their own RWA values, banks have a broad analysis whether they are 
 
 Understanding the definition of RWA, we now continue to apply it for our dataset. To calculate the RWA, the prediction models in the assignment are used for the results of PD for each customer.
 
-```{r, cache= FALSE}
+```{r}
 
 #define values of some constants
 
@@ -917,7 +911,7 @@ According to the summary table and the plots for each models, logistic regressio
 
 # Appendix
 
-```{r impute_pmm, cache = TRUE, echo=FALSE, out.width='100%', fig.cap="\\label{fig:impute_pmm}Imputation using PMM"}
+```{r impute_pmm, out.width='100%', fig.cap="\\label{fig:impute_pmm}Imputation using PMM"}
 
 ### load images 
 
@@ -925,7 +919,7 @@ include_graphics('imputation_pmm.jpeg')
 
 ```
 
-```{r impute_mean, echo=FALSE, cache = TRUE, out.width='100%', fig.cap="\\label{fig:impute_mean}Imputation using mean"}
+```{r impute_mean, out.width='100%', fig.cap="\\label{fig:impute_mean}Imputation using mean"}
 
 ### load images 
 
@@ -933,7 +927,7 @@ include_graphics('imputation_mean.jpeg',)
 
 ```
 
-```{r tuning_rf, echo=FALSE, cache = TRUE, out.width='100%', fig.cap="\\label{fig:tuning_rf}Tuning of Random Forest model"}
+```{r tuning_rf, out.width='100%', fig.cap="\\label{fig:tuning_rf}Tuning of Random Forest model"}
 
 ### load images 
 
@@ -941,7 +935,7 @@ include_graphics('rf_tuning_plot.jpeg',)
 
 ```
 
-```{r tuning_xgb, echo=FALSE, cache = TRUE, out.width='100%', fig.cap="\\label{fig:tuning_xgb}Tuning of xgboost model"}
+```{r tuning_xgb, out.width='100%', fig.cap="\\label{fig:tuning_xgb}Tuning of xgboost model"}
 
 ### load images 
 
