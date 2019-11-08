@@ -411,7 +411,7 @@ test_data <- df_reduced[-index, ]
 
 # Check
 
-nrow(train_data) + nrow(test_data) == nrow(df_reduced)
+# nrow(train_data) + nrow(test_data) == nrow(df_reduced)
 
 ```
 
