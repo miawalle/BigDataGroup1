@@ -560,7 +560,7 @@ The model's confusion matrics is presented in figure xx, and the ROC curve is pr
 - Discuss performance 
 
 
-```{r, cache=TRUE}
+```{r, cache = TRUE, fig.asp=1, fig.width = 14, cache=TRUE}
 
 ############################ Model 2: Random Forest ######################################
 
@@ -577,8 +577,6 @@ model_rf <- caret::train(default ~ .,
                          tuneGrid = tunegrid,
                          num.trees = 100,
                          importance = "permutation")
-
-
 
 # saveRDS(model_rf, file = "rf.Rdata")
 
@@ -652,16 +650,16 @@ test_rf %>%
 
 # xgBoost
 
-```{r, eval = TRUE, cache= FALSE}
+```{r, cache = TRUE, fig.asp=1, fig.width = 14, eval = TRUE, cache= FALSE}
 #Model 3: Xgboost
 
-xgb_grid <- expand.grid(nrounds = 250,
+xgb_grid <- expand.grid(nrounds = 300,
                         max_depth = 7, 
                         min_child_weight = 1,
                         subsample = 1,
-                        gamma = .2,
+                        gamma = .1,
                         colsample_bytree = 0.8,
-                        eta = .2)
+                        eta = .1)
 
 set.seed(1)
 
@@ -670,9 +668,9 @@ model_xgb <- caret::train(default ~ .,
                           method = "xgbTree",
                           tuneGrid =xgb_grid,
                           trControl = ctrl)
-
+model_xgb
 # Check preProcess - is this necessary, is it right, or is it wrong??
-
+plot(model_xgb)
 # saveRDS(model_xgb, file = "xgb.Rdata")
 
 ```
@@ -935,3 +933,18 @@ include_graphics('imputation_mean.jpeg',)
 
 ```
 
+```{r tuning_rf, echo=FALSE, cache = TRUE, out.width='100%', fig.cap="\\label{fig:tuning_rf}Tuning of Random Forest model"}
+
+### load images 
+
+include_graphics('rf_tuning_plot.jpeg',)
+
+```
+
+```{r tuning_xgb, echo=FALSE, cache = TRUE, out.width='100%', fig.cap="\\label{fig:tuning_xgb}Tuning of xgboost model"}
+
+### load images 
+
+include_graphics('xgb_tuning_plot.jpeg',)
+
+```
