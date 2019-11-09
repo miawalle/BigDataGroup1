@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FA
 \pagebreak
 
 
-```{r, cache = FALSE}
+```{r}
 
 library(dplyr)
 library(magrittr)
@@ -66,8 +66,7 @@ The first thing we notice is that some variables are classified as numeric when 
 
 Table xx displays summary statistics of our data. As shown in the table, the value xx is present in many of the observations. Most likely, these values represent measurement errors or missing variables, and we therefore choose to replace these values with NAs. After completing this step, there are still some quite extreme outliers remaining in the data. Our assessment is that these values do not represent real observations, as they deviate from typical values for the financial key figures represented in the variables in question. Applying a threshold of 2,5 percent at each end of the variables' distribution, we replace values exceeding this threshold with NAs.  
 
-```{r, cache= TRUE}
-
+```{r}
 
 # Summary statistics 
 
@@ -91,7 +90,7 @@ caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max"),header = FALS
 
 We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
 
-```{r hist, cache=FALSE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
+```{r hist, cache= TRUE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
 
 # Distribution of defaults and not defaults
 
@@ -106,30 +105,12 @@ df_corp %>%
 ```
 
 
-```{r, cache= TRUE}
-
-# Mia: Should we consider removing some of these lines? 
-
-# Look at the distribution and recategorize the factor classes
-
-# Adverse_audit_opinion
-
-
+```{r}
 
 # xtable(table(df_corp$default, df_corp$adverse_audit_opinion))
 
 df_corp$adverse_audit_opinion <- 
   ifelse(df_corp$adverse_audit_opinion == 0, yes = 0, no = 1)
-
-# xtable(table(df_corp$default, df_corp$adverse_audit_opinion)) # If you got any Adverse audit opinons then its show as 1
-
-# Industry
-
-# xtable(table(df_corp$default, df_corp$industry)) # As we don't know anything about the type of industry we let it be
-
-# Payment_reminders
-
-# xtable(table(df_corp$default, df_corp$payment_reminders)) # Ok
 
 ```
 
@@ -185,7 +166,7 @@ df_corp[df_corp >  1000000000000000] <- NA
 ```
 
 
-```{r pre_boxplot, cache = TRUE, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:pre_boxplot}Before cleaning"}
+```{r pre_boxplot, cache =TRUE, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:pre_boxplot}Before cleaning"}
 
 # We take a new look after replacing the errors with NA
 
@@ -201,7 +182,7 @@ df_corp %>%
 ```
 
 
-```{r, cache= TRUE}
+```{r, cache = TRUE}
 
 ################## Dealing with the outliers ######################
 
@@ -270,14 +251,14 @@ saveRDS(temp_imputed2, file = "impute.Rdata")
 densityplot(temp_imputed1, drop.unused.levels = TRUE) # Save plots again
 
 densityplot(temp_imputed2, drop.unused.levels = TRUE) # Save plots again
-?densityplot
+
 
 # Running the imputations and generating density plots of the imputed values is higly time consuming. Therefore, we have saved these files and will upload them in chunk xx. 
 
 # See appendix for plots. 
 ```
 
-```{r, include = FALSE}
+```{r, cache = TRUE}
 
 # Uploading imputed values
 
@@ -291,7 +272,7 @@ complete_imputed <- complete(temp_imputed2, 1)
 Orginal <- dim(df_corp)
 Imputed <- dim(complete_imputed)
 
-xtable(rbind(Orginal, Imputed))
+# xtable(rbind(Orginal, Imputed))
 
 df_cleaned <- complete_imputed
 
@@ -302,7 +283,7 @@ df_cleaned <- complete_imputed
 
 A final step is to make sure all variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorized variables. This is due to their distribution, that includes many extreme values despite our previous cleaning. These are therefore coded as dummies.
 
-```{r, include = FALSE}
+```{r, cache = TRUE}
 
 # Generating dummies for paid and unpaid debt collection
 
@@ -313,16 +294,10 @@ df_cleaned$paid_debt_collection <- ifelse(df_cleaned$paid_debt_collection > 0, y
 df_cleaned$paid_debt_collection <- as.factor(df_cleaned$paid_debt_collection)
 df_cleaned$unpaid_debt_collection <- as.factor(df_cleaned$unpaid_debt_collection)
 
-#table1 <- table(df_cleaned$default, df_cleaned$unpaid_debt_collection)
-#table2 <- table(df_cleaned$default, df_cleaned$paid_debt_collection)
-
-#xtable(table1)
-#xtable(table2)
-
 ```
 After cleaning, imputing and reclassifying our variables, we are left with data that is well suited for prediction modelling. Figure xx shows the distribution of the variables in our new dataset that will be used moving forward.
 
-```{r Density_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Density_post_cleaning}Density plot after cleaning"}
+```{r Density_post_cleaning, cache = TRUE, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Density_post_cleaning}Density plot after cleaning"}
 
 # Density plot after cleaning
 
@@ -336,7 +311,7 @@ df_cleaned %>%
 
 ```
 
-```{r Boxplot_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Boxplot_post_cleaning}Boxplot after cleaning", include=FALSE}
+```{r Boxplot_post_cleaning, cache = TRUE, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Boxplot_post_cleaning}Boxplot after cleaning"}
 
 # Boxplot after cleaning
 
@@ -351,6 +326,9 @@ df_cleaned %>%
 
 ```
 
+
+\pagebreak
+
 ##Prediction modelling
 
 In this section we will train and rund three different prediction models; a Logistic Regression Model, a Random Forest and a Xgboost Model. 
@@ -362,7 +340,7 @@ Prior to training our models, need to consider potential correlation between the
  \textit{operating margin} and \textit{xxx} have VIF values of xxx and xxx, respectively, and we therefore choose to leave these out when we train our logistic regression model in section xx.  
  
 
-```{r}
+```{r, cache = TRUE}
 
 # For all models we will remove the equity, total_assets, revenue and amount_unpaid_dept because we want to work with relative values.
 
@@ -399,7 +377,7 @@ mc_vif_3 <- vif(glm(default ~ .-operating_margin - paid_debt_collection - liquid
 mc_vif_3
 ```
 
-```{r}
+```{r, cache = TRUE}
 
 # Split data in to train/test
 
@@ -435,6 +413,7 @@ ctrl <- trainControl(method = "repeatedcv",
                      verboseIter = FALSE,
                      sampling = "smote",
                      classProbs=TRUE)
+                    
 
 ```
 
@@ -460,11 +439,10 @@ Figure xx shows the AUC for the glm model.
 
 \pagebreak
 
-```{r}
+```{r, cache= TRUE}
 
 # After we have runned the model we see that industry and gross have some insignificant values,
-# we try to remove gross and ndustry one by one and together. We got lowest AIC by only removing
-# gross_operating_inc_perc. 
+# we also remove gross based on AIC and significant value of the variable
 
 set.seed(1)
 
@@ -473,13 +451,11 @@ model_glm <- train(default ~ .- operating_margin
                               - liquidity_ratio_1 
                               - profit_margin
                               - gross_operating_inc_perc,
-                   data = train_data,
+                            data = train_data,
                    method = "glm",
                    trControl = ctrl)
 
 # To mangage to run the latter codes due to removal of variables in the regression.
-
-
 
 ```
 
@@ -487,13 +463,55 @@ model_glm <- train(default ~ .- operating_margin
 
 ```{r var_imp_GLM, fig.cap="\\label{fig:var_imp_GLM}Variable importance"}
 
+# Threshold 0.3
+
 summary_glm <- xtable(summary(model_glm), caption = "Summary glm model")
 
 print(summary_glm, scalebox=1, caption.placement = "bottom", label = "tab:sumtable")
 
 plot(varImp(model_glm), main = "Variables Importance GLM")
 
+glm_pred <- data.frame(actual = test_data$default,
+                       predict(model_glm, newdata = test_data, type = "prob"))
 
+glm_pred$predict <- ifelse(glm_pred$Yes > 0.3, "Yes", "No")
+glm_pred$predict <- as.factor(glm_pred$predict)
+
+cm_glm <-confusionMatrix(glm_pred$predict, test_data$default, positive= "Yes")
+
+confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM")
+
+# print(confusion_glm, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_glm")
+
+perf_glm_3 <- as.matrix(cm_glm$byClass)
+colnames(perf_glm_3) <- c("GLM 0.3")
+
+performance_glm_3 <- xtable(perf_glm_3, caption = "Performance indicators GLM")
+
+# print(performance_glm_5, scalebox = 1, caption.placement = "bottom", label = "tab:performance_glm_3")
+
+# Threshold 0.4
+
+glm_pred <- data.frame(actual = test_data$default,
+                       predict(model_glm, newdata = test_data, type = "prob"))
+
+glm_pred$predict <- ifelse(glm_pred$Yes > 0.4, "Yes", "No")
+glm_pred$predict <- as.factor(glm_pred$predict)
+
+cm_glm <-confusionMatrix(glm_pred$predict, test_data$default, positive= "Yes")
+
+confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM threshold: 0.4")
+
+print(confusion_glm, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_glm")
+
+perf_glm_4 <- as.matrix(cm_glm$byClass)
+colnames(perf_glm_4) <- c("GLM 0.4")
+
+performance_glm_4 <- xtable(perf_glm_4, caption = "Performance indicators GLM")
+
+# print(performance_glm_4, scalebox = 1, caption.placement = "bottom", label = "tab:performance_glm_4")
+
+# Treshold 0.5
 
 glm_pred <- data.frame(actual = test_data$default,
                        predict(model_glm, newdata = test_data, type = "prob"))
@@ -501,22 +519,27 @@ glm_pred <- data.frame(actual = test_data$default,
 glm_pred$predict <- ifelse(glm_pred$Yes > 0.5, "Yes", "No")
 glm_pred$predict <- as.factor(glm_pred$predict)
 
-cm_glm <-confusionMatrix(glm_pred$predict, test_data$default, positive=1)
+cm_glm <-confusionMatrix(glm_pred$predict, test_data$default, positive= "Yes")
 
 confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM")
 
-print(confusion_glm, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_glm")
+# print(confusion_glm, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_glm")
 
+perf_glm_5 <- as.matrix(cm_glm$byClass)
+colnames(perf_glm_5) <- c("GLM 0.5")
 
+performance_glm_5 <- xtable(perf_glm_5, caption = "Performance indicators GLM")
 
-perf_glm <- as.matrix(cm_glm$byClass)
-colnames(perf_glm) <- c("Values")
+# print(performance_glm_5, scalebox = 1, caption.placement = "bottom", label = "tab:performance_glm")
 
-performance_glm <- xtable(perf_glm, caption = "Performance indicators GLM")
+# Comparing
 
-print(performance_glm, scalebox = 1, caption.placement = "bottom", label = "tab:performance_glm")
+comp_thresh_glm <- cbind(perf_glm_3, perf_glm_4, perf_glm_5)
 
+print(xtable(comp_thresh_glm, caption = "Performance indicators GLM"), scalebox = 1, caption.placement = "bottom", label = "tab:comp_thresh_glm")
 ```
+
+
 
 
 ```{r ROC_glm, fig.cap="\\label{fig:ROC_glm}ROC plot for glm logistic"}
@@ -547,6 +570,8 @@ test_glm %>%
 
 ```
 
+\pagebreak
+
 ## Random forest
 
 Our second predicion model is a random forest model.
@@ -560,7 +585,7 @@ The model's confusion matrics is presented in figure xx, and the ROC curve is pr
 - Discuss performance 
 
 
-```{r, eval= FALSE, fig.asp=1, fig.width = 14}
+```{r, eval = FALSE, fig.asp=1, fig.width = 14}
 
 ############################ Model 2: Random Forest ######################################
 
@@ -577,17 +602,64 @@ model_rf <- caret::train(default ~ .,
                          tuneGrid = tunegrid,
                          num.trees = 100,
                          importance = "permutation")
+                        
 
 # saveRDS(model_rf, file = "rf.Rdata")
 
 ```
 
-\pagebreak
+
 
 
 ```{r var_imp_rf, fig.cap="\\label{fig:var_imp_rf}Variables importance Random Forest"}
 
 model_rf <- readRDS("rf.Rdata")
+
+# Treshold 0.3
+
+rf_pred <- data.frame(actual = test_data$default,
+                       predict(model_rf, newdata = test_data, type = "prob"))
+
+rf_pred$predict <- ifelse(rf_pred$Yes > 0.3, "Yes", "No")
+rf_pred$predict <- as.factor(rf_pred$predict)
+
+plot(varImp(model_rf),main = "Variables Importance Random Forest")
+
+cm_rf <- confusionMatrix(rf_pred$predict, test_data$default, positive = "Yes")
+
+confusion_rf <- xtable(as.matrix(cm_rf$table), caption = "Confusion matrix Random Forest")
+
+# print(confusion_rf, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_rf")
+
+perf_rf_3 <- as.matrix(cm_rf$byClass)
+colnames(perf_rf_3) <- c("RF 0.3")
+
+performance_rf_3 <- xtable(perf_rf_3, caption = "Performance indicators Random Forest")
+
+# print(performance_rf_3, scalebox = 1, caption.placement= "bottom", label = "tab:performance_rf_3")
+
+# Treshold 0.4
+
+rf_pred <- data.frame(actual = test_data$default,
+                       predict(model_rf, newdata = test_data, type = "prob"))
+
+rf_pred$predict <- ifelse(rf_pred$Yes > 0.4, "Yes", "No")
+rf_pred$predict <- as.factor(rf_pred$predict)
+
+cm_rf <- confusionMatrix(rf_pred$predict, test_data$default, positive = "Yes")
+
+confusion_rf <- xtable(as.matrix(cm_rf$table), caption = "Confusion matrix Random Forest threshold: 0.4")
+
+print(confusion_rf, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_rf")
+
+perf_rf_4 <- as.matrix(cm_rf$byClass)
+colnames(perf_rf_4) <- c("RF 0.4")
+
+performance_rf_4 <- xtable(perf_rf_4, caption = "Performance indicators Random Forest")
+
+# print(performance_rf_4, scalebox = 1, caption.placement= "bottom", label = "tab:performance_rf_4")
+
+# Treshold 0.5
 
 rf_pred <- data.frame(actual = test_data$default,
                        predict(model_rf, newdata = test_data, type = "prob"))
@@ -595,20 +667,25 @@ rf_pred <- data.frame(actual = test_data$default,
 rf_pred$predict <- ifelse(rf_pred$Yes > 0.5, "Yes", "No")
 rf_pred$predict <- as.factor(rf_pred$predict)
 
-plot(varImp(model_rf),main = "Variables Importance Random Forest")
-
-cm_rf <- confusionMatrix(rf_pred$predict, test_data$default)
+cm_rf <- confusionMatrix(rf_pred$predict, test_data$default, positive = "Yes")
 
 confusion_rf <- xtable(as.matrix(cm_rf$table), caption = "Confusion matrix Random Forest")
 
-print(confusion_rf, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_rf")
+# print(confusion_rf, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_rf")
 
-perf_rf <- as.matrix(cm_rf$byClass)
-colnames(perf_rf) <- c("Values")
+perf_rf_5 <- as.matrix(cm_rf$byClass)
+colnames(perf_rf_5) <- c("RF 0.5")
 
-performance_rf <- xtable(perf_rf, caption = "Performance indicators Random Forest")
+performance_rf_5 <- xtable(perf_rf_5, caption = "Performance indicators Random Forest")
 
-print(performance_rf, scalebox = 1, caption.placement= "bottom", label = "tab:performance_rf")
+# print(performance_rf_5, scalebox = 1, caption.placement= "bottom", label = "tab:performance_rf_5")
+
+# Comparing
+
+comp_thresh_rf <- cbind(perf_rf_3, perf_rf_4, perf_rf_5)
+
+print(xtable(comp_thresh_rf, caption = "Performance indicators Rf"), scalebox = 1, caption.placement = "bottom", label = "tab:comp_thresh_rf")
+
 
 ```
 
@@ -650,7 +727,7 @@ test_rf %>%
 
 # xgBoost
 
-```{r, eval=FALSE, fig.asp=1, fig.width = 14, eval = TRUE}
+```{r, fig.asp=1, fig.width = 14, eval = FALSE}
 #Model 3: Xgboost
 
 xgb_grid <- expand.grid(nrounds = 300,
@@ -675,11 +752,55 @@ model_xgb <- caret::train(default ~ .,
 
 ```
 
-```{r var_imp_xgb, Cache = FALSE, fig.cap="\\label{fig:var_imp_xgb}Variable importance Xgboost"}
+```{r var_imp_xgb, fig.cap="\\label{fig:var_imp_xgb}Variable importance Xgboost"}
 
 model_xgb <- readRDS("xgb.Rdata")
 
+# threshold 0.3
+
 plot(varImp(model_xgb),main = "Variables Importance Xgboost")
+
+xgb_pred <- data.frame(actual = test_data$default,
+                      predict(model_xgb, newdata = test_data, type = "prob"))
+
+xgb_pred$predict <- ifelse(xgb_pred$Yes > 0.2, "Yes", "No")
+xgb_pred$predict <- as.factor(xgb_pred$predict)
+
+cm_xgb <- confusionMatrix(xgb_pred$predict, xgb_pred$actual, positive = "Yes")
+
+confusion_xgb <- xtable(as.matrix(cm_xgb$table), caption = "Confusion matrix xgboost treshhold: 0.3")
+
+print(confusion_xgb, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_xgb")
+
+perf_xgb_3 <- as.matrix(cm_xgb$byClass)
+colnames(perf_xgb_3) <- c("XGB 0.3")
+
+performance_xgb_3 <- xtable(perf_xgb_3, caption = "Performance indicators xgboost")
+
+print(performance_xgb_3, scalebox = 1, caption.placement= "bottom", label = "tab:performance_xgb_3")
+
+# threshold 0.4
+
+xgb_pred <- data.frame(actual = test_data$default,
+                      predict(model_xgb, newdata = test_data, type = "prob"))
+
+xgb_pred$predict <- ifelse(xgb_pred$Yes > 0.4, "Yes", "No")
+xgb_pred$predict <- as.factor(xgb_pred$predict)
+
+cm_xgb <- confusionMatrix(xgb_pred$predict, xgb_pred$actual, positive = "Yes")
+
+# confusion_xgb <- xtable(as.matrix(cm_xgb$table), caption = "Confusion matrix xgboost treshhold: 0.4")
+
+print(confusion_xgb, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_xgb")
+
+perf_xgb_4 <- as.matrix(cm_xgb$byClass)
+colnames(perf_xgb_4) <- c("XGB 0.4")
+
+performance_xgb_4 <- xtable(perf_xgb_4, caption = "Performance indicators xgboost")
+
+# print(performance_xgb_4, scalebox = 1, caption.placement= "bottom", label = "tab:performance_xgb_4")
+
+# threshold 0.5
 
 xgb_pred <- data.frame(actual = test_data$default,
                       predict(model_xgb, newdata = test_data, type = "prob"))
@@ -687,22 +808,28 @@ xgb_pred <- data.frame(actual = test_data$default,
 xgb_pred$predict <- ifelse(xgb_pred$Yes > 0.5, "Yes", "No")
 xgb_pred$predict <- as.factor(xgb_pred$predict)
 
-cm_xgb <- confusionMatrix(xgb_pred$predict, xgb_pred$actual)
+cm_xgb <- confusionMatrix(xgb_pred$predict, xgb_pred$actual, positive = "Yes")
 
-confusion_xgb <- xtable(as.matrix(cm_xgb$table), caption = "Confusion matrix xgboost")
+confusion_xgb <- xtable(as.matrix(cm_xgb$table), caption = "Confusion matrix xgboost treshhold: 0.5")
 
-print(confusion_xgb, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_xgb")
+# print(confusion_xgb, scalebox = 1, caption.placement = "bottom", label = "tab:confusion_xgb")
 
-perf_xgb <- as.matrix(cm_xgb$byClass)
-colnames(perf_xgb) <- c("Values")
+perf_xgb_5 <- as.matrix(cm_xgb$byClass)
+colnames(perf_xgb_5) <- c("XGB 0.5")
 
-performance_xgb <- xtable(perf_xgb, caption = "Performance indicators xgboost")
+performance_xgb_5 <- xtable(perf_xgb_5, caption = "Performance indicators xgboost")
 
-print(performance_xgb, scalebox = 1, caption.placement= "bottom", label = "tab:performance_xgb")
+# print(performance_xgb_5, scalebox = 1, caption.placement= "bottom", label = "tab:performance_xgb_5")
+
+# Comparing
+
+comp_thresh_xgb <- cbind(perf_xgb_3, perf_xgb_4, perf_xgb_5)
+
+print(xtable(comp_thresh_xgb, caption = "Performance indicators Xgb"), scalebox = 1, caption.placement = "bottom", label = "tab:comp_thresh_Xgb")
 
 ```
 
-```{r ROC_xgb, Cache = FALSE, fig.cap="\\label{fig:ROC_xgb}ROC plot for Xgboost"}
+```{r ROC_xgb, fig.cap="\\label{fig:ROC_xgb}ROC plot for Xgboost"}
 
 # ROC curve xgb
 
@@ -744,10 +871,13 @@ Precision and recall are two extremely important model evaluation metrics. While
 
 \pagebreak
 
-```{r model_comp, cache= FALSE, fig.cap="\\label{fig:model_comp}Comparing models with Accuracy and Kappa"}
-
+```{r model_comp, fig.cap="\\label{fig:model_comp}Comparing models with Accuracy and Kappa"}
 
 # Look at the performance
+table_all <- cbind(perf_glm_4,perf_rf_4,perf_xgb_3)
+
+performance_all <- xtable(table_all, caption = "Performance indicators all models")
+print(performance_all, scalebox = 1, caption.placement= "bottom", label = "tab:performance_all")
 
 models <- list(glm = model_glm,
                rf = model_rf,
@@ -758,7 +888,6 @@ resampling <- resamples(models)
 bwplot(resampling, main = "Comparing of the models")
 
 comp_table <- summary(resampling) 
-
   
 caption_at_bottom(stargazer(comp_table$statistics$Accuracy, header = FALSE, title = "Accuracy" ))
 caption_at_bottom(stargazer(comp_table$statistics$Kappa, header = FALSE, title = "Kappa"))
@@ -791,59 +920,52 @@ Understanding the definition of RWA, we now continue to apply it for our dataset
 
 #define values of some constants
 
+RWA <- function(x){
+   
 LGD = 0.45
 EAD = 100
 M = 2.5
 S = 50
+  
+Ra <- 1-exp(-50*x)
+Rb <- 1-exp(-50) 
 
+Re <- S-5
+Rf <- 0.04 * (1-(Re/45))
+R <- 0.12 * (Ra/Rb) + 0.24 * (1-Ra/Rb) - Rf
 
-#calculate RWA according to RWA formula and glm 
+Ba <- 0.11852 - 0.05478*ln(x)
 
-glm <- data.frame(R = 0.12*((1-exp(-50*glm_predictions$Yes))/(1-exp(-50))) +
-                   0.24*(1-(1-exp(-50*glm_predictions$Yes))/(1-exp(-50))) - 0.04 * ((1-(S-5))/45))
+B <- Ba^2
 
+Ka <- (1-R)^(-0.5)
+Kb <- qnorm(x)
+Kc <- (R/(1-R))^0.5
+Kd <- qnorm(0.999)
+Ke <- x*LGD
+Kf <- (1-1.5*B)^(-1)
+Kg <- 1+((M-2.5)*B)
+  
+K <- (LGD*pnorm(Ka*Kb + Kc*Kd) - Ke)*Kf*Kg
 
-glm$b = (0.11852 - 0.05478*ln(glm_predictions$Yes))^2
+RWA = K*12.5*EAD
 
-glm$K = (LGD*pnorm(((1-glm$R)^(-0.5))*qnorm(glm_predictions$Yes) + 
-          ((glm$R/(1-glm$R))^0.5)*qnorm(0.999)) - glm_predictions$Yes*LGD)*
-  ((1-1.5*glm$b)^(-1))*(1+((M-2.5)*glm$b))
+RWA  
+}
 
-glm$RWA = glm$K*12.5*EAD
-
-#calculate RWA according to RWA formula and random forest
-
-rf <- data.frame(R = 0.12*((1-exp(-50*rf_predictions$Yes))/(1-exp(-50))) +
-                   0.24*(1-(1-exp(-50*rf_predictions$Yes))/(1-exp(-50))) - 0.04 * ((1-(S-5))/45))
-
-rf$b = (0.11852 - 0.05478*ln(rf_predictions$Yes))^2
-
-rf$K = (LGD*pnorm(((1-rf$R)^(-0.5))*qnorm(rf_predictions$Yes) + 
-          ((rf$R/(1-rf$R))^0.5)*qnorm(0.999)) - rf_predictions$Yes*LGD)*
-  ((1-1.5*rf$b)^(-1))*(1+((M-2.5)*rf$b))
-
-rf$RWA = rf$K*12.5*EAD
-
-#calculate RWA according to RWA formula and xgboost
-
-xgb <- data.frame(R = 0.12*((1-exp(-50*xgb_predictions$Yes))/(1-exp(-50))) +
-                   0.24*(1-(1-exp(-50*xgb_predictions$Yes))/(1-exp(-50))) - 0.04 * ((1-(S-5))/45))
-
-xgb$b = (0.11852 - 0.05478*ln(xgb_predictions$Yes))^2
-
-xgb$K = (LGD*pnorm(((1-xgb$R)^(-0.5))*qnorm(xgb_predictions$Yes) + 
-          ((xgb$R/(1-xgb$R))^0.5)*qnorm(0.999)) - xgb_predictions$Yes*LGD)*
-  ((1-1.5*xgb$b)^(-1))*(1+((M-2.5)*xgb$b))
-
-xgb$RWA = xgb$K*12.5*EAD
+RWA_glm <- RWA(glm_predictions$Yes)
+RWA_rf <- RWA(rf_predictions$Yes)
+RWA_xgb <- RWA(xgb_predictions$Yes)
 
 
 #Compare the RWA in each model
 
-RWA_models <- data.frame(RWA_glm = glm$RWA,
-               RWA_rf = rf$RWA,
-               RWA_xgb = xgb$RWA)
+RWA_models <- as.data.frame(cbind(RWA_glm, RWA_rf, RWA_xgb))
 
+pd_df <- cbind(glm_predictions$Yes, rf_predictions$Yes, xgb_predictions$Yes)
+colnames(pd_df) <- c("GLM", "RF", "XGB")
+
+caption_at_bottom(stargazer(pd_df, header = FALSE, title  = "PD distribution"))
 
 caption_at_bottom(stargazer(RWA_models, header = FALSE, title  = "RWA comparison"))
 
@@ -853,7 +975,7 @@ After that, we base on the formula advised as below to get the RWA needed.
 
 \[
   \makebox[\linewidth]{$\displaystyle
-    \begin{aligned} R = 0.12\cdot\frac{1-exp(-50 \cdot PD)}{1-exp(-50)}+0.24 \cdot [1-\frac{1-exp(-50 \cdot PD)}{1-exp(-50)}]-0.04 \cdot \frac{1-(s-5)}{45}\end{aligned}
+    \begin{aligned} R = 0.12\cdot\frac{1-exp(-50 \cdot PD)}{1-exp(-50)}+0.24 \cdot [1-\frac{1-exp(-50 \cdot PD)}{1-exp(-50)}]-0.04 \cdot (1-\frac{(s-5)}{45})\end{aligned}
   $}
 \]
 
