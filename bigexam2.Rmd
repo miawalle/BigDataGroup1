@@ -100,7 +100,7 @@ caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max"),header = FALS
 
 ```
 ### Data imbalance
-When looking at our data, we notice that the variable \texit{default}, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. We will handle this imbalance when we implement the prediction models in section xx.
+When looking at our data, we notice that the variable \textit{default}, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. We will handle this imbalance when we implement the prediction models in section xx.
 
 
 ```{r hist, cache=FALSE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
