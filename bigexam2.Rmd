@@ -57,14 +57,25 @@ df_corp <- df
 
 # Task 1: Predicion modelling
 
+In this part we will first inspect, clean and impute the data set and the associated variables. We then use stepwise and manual variable selection, as well as test for multicollinearity, to choose the best possible starting point for our prediction model. This is to ensure that when we create and run the model, it is reliable and give predictions that make sense. Finally, we create our models, logistic, random forest and xgboost, and look at how they differ from each other.
+
+We will train and run three different prediction models based on a data set containing financial records of a list of companies. In total, there are 24 variables in the data set and 128070 observations. Prior to training our prediction models, we load and examine the data set.
+
+
 ## Part 1: Inspecting, cleaning and imputing the data set 
 
-In this section, we will train and rund three different prediction models based on a data set containing financial records of a list of companies. In total, there are 24 variables in the data set and 128070 observations. Prior to training our prediction models, we load and examine the data set.
 
-The first thing we notice is that some variables are classified as numeric when they should be factor variables, and vice versa. These variables are reclassified. 
+### Missing values and outliers
+We first wish to look at the distribution of our data, and therefore create a summary statistics, shown in table xx. From this table, we see that many of the observations have a value of +/- 100 000 000’’’’’ (5 more triple zeros). Most likely, these values represent measurement errors or missing variables. They do not make economically sense, but we do not know if the errors occur at random or not. They seem to appear in some of the variables, and not all, but we do not have enough information to make a justified decision about whether they are random. It is therefore not ideal to just remove them (Swalin, 2018), and we choose to replace these values with NAs. 
+
+After completing this step, we find from the box plots (in the appendix) that there are still some extreme outliers remaining. Our assessment is that these values do not represent real observations, as they deviate from typical values for the financial key figures represented in the variables in question. One solution to this is to remove them, but that could bias the dataset. Therefore, applying a threshold of 2,5 percent at each end of the variables' distribution, we replace values exceeding this threshold with NAs. We will later deploy an imputation technique on all the observations replaced with NAs. See further discussions in sections xx.  
+
+Next, we want to look at whether all the variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorical variables. This is due to their distribution, which includes many extreme values despite our previous cleaning. We therefore encode both these variables as dummies. Adverse audit opinion is also a categorical variable, with several classes. As these do not make sense, and could result in a poorer model, we also dummify these into 0, for those having no adverse audit opinions, and 1, for those that do have adverse audit opinions. 
+
+A final step is to make sure all the variables are categorized logically. We find that there are some variables which should be recategorized. Equity, total asset value, and age of company are changed to be numeric variables, whilst default, adverse audit opinion, industry and payment reminder are changed to factors. We now only have numeric and factorial variables. 
 
 
-Table xx displays summary statistics of our data. As shown in the table, the value xx is present in many of the observations. Most likely, these values represent measurement errors or missing variables, and we therefore choose to replace these values with NAs. After completing this step, there are still some quite extreme outliers remaining in the data. Our assessment is that these values do not represent real observations, as they deviate from typical values for the financial key figures represented in the variables in question. Applying a threshold of 2,5 percent at each end of the variables' distribution, we replace values exceeding this threshold with NAs.  
+.  
 
 ```{r, cache= TRUE}
 
@@ -88,8 +99,9 @@ caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max"),header = FALS
 # As described in the text, outliers are replaced with NA's. See chunch no. xx. 
 
 ```
+### Data imbalance
+When looking at our data, we notice that the variable \texit{default}, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. We will handle this imbalance when we implement the prediction models in section xx.
 
-We also notice that the variable \texit{default}, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
 
 ```{r hist, cache=FALSE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
 
@@ -251,14 +263,13 @@ df_corp <- df_corp %>%
 #Mia: Meybe we can do this in another chunk?
 
 ```
-After cleaning the data set, we are left with xx missing values. As these account for a substantial fraction of the total number of observations in the data set, we choose to impute these using the MICE package. 
+### Imputation
+After cleaning the data set, we are left with xx missing values, that we have to deal with. If not, this could impact the quality of our model (Badr, 2019). It is, first of all, important to note that a good way to deal with missing values does not exist (Swalin, 2018). The easiest way to fix all the missing variables would be to just delete them, if you have enough data. However, if the data is not missing at random, deleting the missing values would make the data biased, or remove important information (Badr, 2019). It is also in general better to impute the missing variables than to just delete them. As the missing values account for a substantial fraction of the total number of observations in the data set, we choose to impute these values. 
 
-- PMM imputation: Explain this. 
-- Why is this better than replacing NA with mean or median. 
+A common way to impute is by replacing the missing values with the mean or median of the variable in question. Unfortunately, this would change the mode and thus the data set quite a bit. We also find that this method is better suited when you have continuous variables, rather than categorical (Swalin, 2018). A better solution for us would be to either use logistic regression, multiple imputation or make the missing data as level. We have chosen to use multiple imputation by chained equation (MICE), more specifically predictive Mean Matching (PMM). The imputed variables created by PMM appear closer to real values than those given by methods based on linear regression and normal distribution (Allison, 2015). One advantage with this technique is that it be used on classified variables. Moreover, it does not suggest values that are out of range for the variable that is being imputed (Allison, 2015). A comparison of the results of a PMM imputation and an imputation using mean values is added to the appendix. We believe that though there is no perfect way to solve the issue of missing values, this is a good alternative.
 
-An illustration of the imputation added to the appendix.
+Some models, such as XGboost, are better suited to handle missing data, than the logistic one (Badr, 2019). We have, however, decided to use the imputed data for all three models, as the errors were so large, and the following NAs so many. 
 
-- Write some more about the imputation method.
 
 ```{r,fig.asp=1, fig.width = 14, eval=FALSE}
 
@@ -302,7 +313,6 @@ df_cleaned <- complete_imputed
 
 ```
 
-A final step is to make sure all variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorized variables. This is due to their distribution, that includes many extreme values despite our previous cleaning. These are therefore coded as dummies.
 
 ```{r, include = FALSE}
 
@@ -322,7 +332,10 @@ df_cleaned$unpaid_debt_collection <- as.factor(df_cleaned$unpaid_debt_collection
 #xtable(table2)
 
 ```
-After cleaning, imputing and reclassifying our variables, we are left with data that is well suited for prediction modelling. Figure xx shows the distribution of the variables in our new dataset that will be used moving forward.
+
+After cleaning, imputing and reclassifying our variables, we are left with data that is well suited for prediction modelling. Figure xx shows the distribution of the variables in our new dataset that will be used moving forward. We see from the plot that our data looks much better now, than before we cleansed, imputed and reclassified it.
+
+
 
 ```{r Density_post_cleaning, fig.asp=1, fig.width = 14, fig.cap="\\label{fig:Density_post_cleaning}Density plot after cleaning"}
 
@@ -357,17 +370,49 @@ df_cleaned %>%
 
 In this section we will train and rund three different prediction models; a Logistic Regression Model, a Random Forest and a Xgboost Model. 
 
-### Variable Selection
+### Cross Validation/Bias Variance tradeoff
+
+Working with such a large data set as we have in this assignment allows for training models that fits the underlying data very well, which risks overfitting the models. Overfitting is undesirable because the fit obtained will not yield accurate predictions on new observations (Source: Statistical learning book, cite this properly). At the same time, it is desirable to reduce the model’s bias, i.e. the inability to capture the true relationship between the variables, which naturally involves increasing the model’s flexibility and thereby risking overfitting the model. This issue is referred to as the bias-variance tradeoff (statistical learning book, cite properly). 
+
+A common approach to control for overfitting is the validation method. Here, one stratifies the data into a training set and a test set, and then train and test the model on the two sets, respectively. This will however introduce some bias, as the model trained with the training set not necessarily is comparable to the model run on the remaining data. Bias is reduced when a larger portion of the data can be used for training. The method that exploits the largest proportion of the data set when training Leave One Out Cross Validation (LOOCV). Here, the test data consists of only one observation, while the remaining observations are used for training. This is done repeatedly for different splits of training and test data. This approach naturally introduces more variance than working with relatively less observations in the training data. 
+
+In general, the key is to train a model where a sufficiently large portion of the data is used for training to increase flexibility and reduce bias, while at the same time, we want we want enough data points for testing in order to keep the variance at a low level (Joglekar, 2015)
+
+A good approach to do this is to use k-fold Cross Validation when we train our models. This approach involves randomly dividing the set of observations into k folds. The first fold is treated as a validation set, and the model is trained on the remaining k-1 folds. Then another fold is treated as a validation set whereas the remaining folds are used for training. This is repeated for all folds. The choice of k, i.e. the number of folds, matters for the bias-variance tradeoff. A large value implies an approach similar to the LOOVC and will give high variance in the testing procedure. A small value of k implies getting closer to the validation set approach. 
+
+We have chosen to do a 10 fold cross validation with 10 repetitions. Cross validation is used for all of the three different prediction models. Choosing 10 folds have been shown empirically to yield results that suffer neither from excessively high bias nor from very high variance (Source: Statistical book)
 
 
-Prior to training our models, we need to consider potential correlation between the variables in our dataset. This is done by running a logistic regression and letting R calculate the VIF for the different different independent variables. As seen in table xx, the variables
- \textit{operating margin} and \textit{xxxx} have VIF values of xxx and xxx, respectively, and we therefore choose to leave these out when we train our logistic regression model in section xx.  
- 
-Furthermore, we believe it makes little sense to compare vairables that are not ratios. For example, a small company will typically have a lower revenue than a large company, 
-- And therefore it will not make sense to compare their equity level without 
-- Explain
+### Dealing with data imbalance
+As mentioned in section xx, the actual defaults are underrepresented in our data set, which will make it difficult to accurately predict defaults in our models. This is called imbalanced data, meaning our classes are not equally represented (Brownlee, 2015). An issue here, if we do not handle the imbalance, is that our model will have a high accuracy, but be completely useless, as it is only representing the imbalance already present. We can approach this kind of data two ways; either we can assume it is not an accurate representation of reality, and set out to gather more data, meaning the reality is balanced. Or, we can assume that reality actually is imbalanced and thus, the data will also be so (Rocca, 2019). As we are dealing with companies defaulting on their loans, we find that the default/non-default ratio seems accurate. We therefore assume that our data is a true representation of reality, and need to handle the imbalance accordingly. 
 
-We made an attempt to generate ratio values such as debt to equity or revenue over assets. These predictors would be comparable across companies and be well suited as explanatory variables. However, we did not succeed in doing so, as there despite cleaning our data are some quite extreme values in the data set. We therefore remove the variables \textit{equity}, \textit{total assets}, \textit{revenue} and \textit{amount unpaid debt}.
+A common way to deal with this is to use a resampling technique (Towards Data Science, 2018). One could approach this by \textit{undersampling} the data, i.e. remove observations form of firms that did not default. Alternatively, one could \textit{oversampling} the data - that is, scale up the number of defaulting companies. Each approach has its drawbacks. Undersampling can lead to loss of information, making it difficult for the model to predict significant results. One problem with oversampling is that it creates new observations by duplicating data that already exists in the dataset. This way, even though a higher proportion of the dataset are defaulters, they do not contain any new information that increases the model’s predictive power.
+
+Luckily, modified versions have been developed in order to mitigate some of these issues. We have chosen to deploy the Synthetic Minority Oversampling Technique (SMOTE) (Frei, 2019). SMOTE’s main advantage compared to a simple oversampling is that it creates synthetic observations instead of reusing observations that already exist in the dataset. This way, it is less likely to overfit the classifier. In all our models, we have incorporated SMOTE in the 10 fold cross validation procedure. 
+
+Changing the performance metric from accuracy, could also help with our imbalanced data set (Brownlee, 2015), and we have chosen to instead use sensitivity, specificity, a confusion matrix, ROC curves, precision, F1 and several other metrics. These will be discussed later.
+
+
+### Removing non-relative values
+
+Our data have several variables where the values are non-relative, meaning they look at absolute differences rather than ratios. We tried to calculate different variables using these, but this yielded odd values and numbers, that did not make sense economically. Thus, we remove these variables, namely \textit{equity}, \textit{total assets}, \textit{revenue}, \textit{gross operating income} and \textit{amount unpaid debt}.
+
+After removing the non-relative variables, we the data set into a train and test, with 70% of our observations as the training set, and the remaining 30 % as a test set.
+
+
+### Logistic Regression
+
+#### Variable Selection
+
+Prior to training our models, we need to consider potential correlation between the variables in our data set. When independent variables correlate with each other, it becomes difficult to interpret a variable’s influence on the outcome variable as a change that occurs “all else equal” (Woolridge, p. 97, YEAR). One way to control for multicollinearity is by computing the Variance Inflation Factor (VIF). The VIF of a variable is the ratio of the variance of the variable’s coefficient when fitting the full model divided by the variance of its coefficient when it is fit to the model on its own. When assessing multicollinearity, it is common to set a threshold for the VIF somewhere between 5 and 10. (Source: statistical learning book). 
+
+To control for multicollinearity we run a logistic regression and then calculate the VIF for the different independent variables in our data set. As seen in table xx, the variables  \textit{operating margin} and \textit{EBITDA margin} have VIF values of xxx and xxx, respectively. When running the model without \textit{operating margin} and recalculating the VIF, none of the VIF exceed the value 5. When we train our logistic regression model in section xx,   \textit{operating margin} will be left out.
+
+We conduct stepwise selection to evaluate the model and remove variables that have little predictive power. Here, we seek to minimize AIC (NCSS Statistical Software, n.d.).
+The lowest AIC is obtained when we exclude the following variables: \textit{Paid debt collection}, \textit{profit margin} and \textit{liquidity ratio 1}.
+
+As a final control, we calculate the VIF again, but this time without detecting any potential multicollinearity issues. We feel confident with going further with training our model. 
+
 
 ```{r, include = FALSE, eval= FALSE}
 
@@ -407,7 +452,7 @@ df_reduced <- df_cleaned %>%
 
 ``` 
 
-We then split the data set into train and test, with 70% of our observations as the training set, and the remaining 30 % as a test set.
+
 
 ```{r}
 
@@ -435,15 +480,10 @@ xtable(rbind(`Train defaults`,`Test defaults`))
 
 ```
 
-## Cross Validation
-Working with such a large data set as we have in this assignment allows for learning subtle features of the data. The downside of this is the risk of overfitting our models. A good approach to control for this is to cross validate when we train our models. Here, we do a 10 fold cross validation with 10 repititions. Cross validation is used for all three prediction models. 
-
-## Dealing with data imbalance
-As mentioned in section xx, the predicted defaults are underrepresented in our data set which will make it difficult to accurately predict defaults in our models. A common way to deal with this is to use a sampling tecnique. One could either \textit{undersample} the data, i.e. scale down the number of observations of companies that did not default. Alternatively, one could \textit{oversample} the data - that is, scale up the number of defaulting companies. We have chosen to deploy the oversampling technique \textit{smothe}. Smothe is... (A few more words about smothe here).The oversampling technique is incorporated in each fold in the cross validation. 
-
+ 
 ```{r}
 
-############# Making some models ###################
+############# Setting the control to be used fro all three models  ###################
 
 ctrl <- trainControl(method = "repeatedcv", 
                      number = 10, 
@@ -456,30 +496,27 @@ ctrl <- trainControl(method = "repeatedcv",
 
 ### Logistic Regression Model
 
-Our first prediction model is a logistic regression model. 
-- Using cross validation: ten fold, 
-- Oversampling method (smote) implemented here
-- Variable selection: choosing varibles, and why. Not relative values etc etc
+#### Assumptions for logistic regression
+
+There are some assumptions of logistic regression that have to be satisfied, to interpret the model and have reliable predictions (Rivenæs, 2019). When dealing with binary logistic regression, the dependent variable must be binary (Statistics Solutions, n.d.), which our is, fulfilling the assumption. You also need at least one independent variable, either continuous or categorical (Lærd Statistics, n.d.), which our model also has. Both the observations and the variables should be independent (Statistics Solutions, n.d.). We have ensured that the variables are independent, meaning little or no multicollinearity, by excluding those correlating in the variable selection, using AIC as our measurement. It is possible that some of the observations are related, such as if there are subsidiary and parent companies or cooperating companies. However, with the large amount of observations in our data set, we assume this will have little effect, fulfilling this assumption as well.  Next, logistic regression assumes there is a linear relationship between the independent variables and the log odds. We assume this is also fulfilled, partially because there is no multicollinearity present. Finally, we have a large sample size.
 
 
-Summary statistics from the logistic regression model are presented in table xxxx. 
-- comments: which variables are significant, and do they make economically sense
+#### Training the logistic regression model
 
-Figure xxx gives and overview of the variable importance.  
-- Comments: 
+We run a logistic regression model using \textit{default} as the dependent variable. 
 
-A confusion matrix from the glm model is presented in table xx. 
-- Comments: 
 
-Figure xx shows the AUC for the glm model. 
-- Comments: 
+Summary statistics from the logistic regression model are presented in table xxxx. As shown in the table, most variables are statistically significant. The exceptions are \text{liquidity ratio 2} and \textit{industry} 1 -3 and 4-11.
+
+The model’s confusion matrix is shown in table xx and an overview of the variables’ importance is provided in figure xx. We will discuss the models’ performance in section xx. 
 
 \pagebreak
 
+
 ```{r}
 
-# After we have runned the model we see that industry and gross have some insignificant values,
-# we try to remove gross and ndustry one by one and together. We got lowest AIC by only removing
+# After we have run the model, we see that industry and gross income percentage have some insignificant values.
+# We try to remove gross and ndustry one by one and together. We got lowest AIC by only removing
 # gross_operating_inc_perc. 
 
 set.seed(1)
@@ -563,29 +600,22 @@ test_glm %>%
  
 
 ```
+### Tree models
+There are no assumptions for Random Forest (Richmond, 2016). Concerning XGBoost, whilst we could not explicitly find that there are no assumptions, we found that this is a powerful tree algorithm (Brownlee, 2015). We also find that tree models circumvent the assumptions for regression models (Merkle & Phelps, 2008), and thus assume there are no assumptions for this model as well. 
 
-## Random forest
+#### Tuning the tree models
 
-Our second predicion model is a random forest model.
-Comments:
-- We have implemented cross validation
-- Fine tuning?
+In both the Random Forest and the XGboost model, the parameters are tuned in order to optimize the performance of the models.
 
-We pick variables we want to tune and let R decide 
-RF: mtry and mean node size.
-mtry: add a vector from 1 to 5 --> 4.
-mean node: 10 and 20. --> 10.
+In the Random Forest we specify vectors containing potential values for the number of trees and the number of variables that are available for each three. When working with the hyperparameters in the Xgboost model, we pick out some variables we want to tune, as tuning too many parameters is highly time consuming. The ones we choose to tune are  the learning rate (eta), the number of trees to grow (nrounds), the maximum tree depth and gamma. The results of the hyperparameter tuning is added to the appendix. 
 
-- Explain what this is 
+
+#### Random Forest
+We train the Random Forest model and print its associated confusion matrix, ROC curve and variable importance. The results are presented in table xx and figures xx and xx, respectively. 
 
 
 
 
-- Oversampling technique is also implemented here. 
-
-
-The model's confusion matrics is presented in figure xx, and the ROC curve is presented in figure xx. 
-- Discuss performance 
 
 
 ```{r, eval= FALSE, fig.asp=1, fig.width = 14}
@@ -669,16 +699,9 @@ test_rf %>%
 
 \pagebreak
 
-# xgBoost
 
-Tuning: 
-Since it is time consuming to tune all relevant parameters, we tune some:
-ETA: 0,1 to 0,3
-Gamme: 0 to 0,2
-Max threee dept: 5 to 7
-Number of trees from 200, 250 and 300. 
-
-The results are added to the appendix.
+#### XGBoost
+We train the XGBoost model and print its associated confusion matrix, ROC curve and variable importance. The results are presented in table xx and figures xx and xx, respectively. 
 
 
 ```{r, eval=FALSE, fig.asp=1, fig.width = 14, eval = FALSE}
@@ -762,18 +785,6 @@ test_xgb %>%
 
 \pagebreak
 
-Accuracy and Kappa
-These are the default metrics used to evaluate algorithms on binary and multi-class classification datasets in caret.
-
-Accuracy is the percentage of correctly classifies instances out of all instances. It is more useful on a binary classification than multi-class classification problems because it can be less clear exactly how the accuracy breaks down across those classes (e.g. you need to go deeper with a confusion matrix). Learn more about Accuracy here.
-
-Kappa or Cohen’s Kappa is like classification accuracy, except that it is normalized at the baseline of random chance on your dataset. It is a more useful measure to use on problems that have an imbalance in the classes (e.g. 70-30 split for classes 0 and 1 and you can achieve 70% accuracy by predicting all instances are for class 0). Learn more about Kappa here.
-
-Use precision and recall to focus on small positive class — When the positive class is smaller and the ability to detect correctly positive samples is our main focus (correct detection of negatives examples is less important to the problem) we should use precision and recall.
-
-Precision and recall are two extremely important model evaluation metrics. While precision refers to the percentage of your results which are relevant, recall refers to the percentage of total relevant results correctly classified by your algorithm. Unfortunately, it is not possible to maximize both these metrics at the same time, as one comes at the cost of another. For simplicity, there is another metric available, called F-1 score, which is a harmonic mean of precision and recall. For problems where both precision and recall are important, one can select a model which maximizes this F-1 score. For other problems, a trade-off is needed, and a decision has to be made whether to maximize precision, or recall.
-
-\pagebreak
 
 ```{r model_comp, cache= FALSE, fig.cap="\\label{fig:model_comp}Comparing models with Accuracy and Kappa"}
 
@@ -796,6 +807,61 @@ caption_at_bottom(stargazer(comp_table$statistics$Kappa, header = FALSE, title =
 
 
 ```
+\pagebreak
+
+#Assignment 2.2:
+## Which other “business” assessments should be carried out in addition to statistical validation tests to assess model performance?
+ 
+After we have developed the three models and validated them through statistical approach, it is necessary to turn to the business angel and make an assessment if the validation results make sense since the purpose of the selected model is to serve for future business prediction. And in probability of default model, we could consider two aspects from business side:
+ 
+###2.1.
+
+The variables used in three models have been listed with their importance (ref. Figure 4, 6, 8) and if we take out the top 5 variables from each of the model, we could compare which model´s variable importance ranking is more complied with business reality.
+  
+And from the chart above, we found that GLM model has three variables out of top 5 as the payment reminders compare the other two models. And in our model, we have three payment reminders variables because we have turned the original variable into factor, and this give some indication that GLM might be overweighting the variables of payment reminders than the other two models. And since GLM is more sensitive to outliers and multicollinearity issue. So, GLM have five variables less than the other two models as well--- Operating margin, paid debt collection, profit margin, liquidity ratio 1 and gross operating income. And among the excluded values, we find that profit margin is one of the top 5 variables in random forest model. Not including relevant independent variables increases the risk of overlooking causal associations or of confounding them with non-causal ones. It also keeps the unexplained dependent variable variance high and the reliability of our coefficient estimates low (European Social Survey, 2019). So, from the business part, we can see the GLM model underperform random forest and xgboost model.
+ 
+###2.2.
+
+For a more general way of interpretation, except the insufficiency of our dataset. Some factors could be used for a more detailed comparison of different models, for instance, industry. We have different industry categories in the dataset. And from the business reality, some industry might have larger default risk than the others due to their characteristics. And even though we do not have specific industry information with our dataset. But we do discover that the ranking of industry factor from our three models are different. And in the business assessment we could check besides statistic validation to see if the rankings are reasonable with complementary information regarding industry.
+
+###2.3. 
+
+How you would assess model performance if the portfolio had been a low-default portfolio?
+
+
+####2.3.1. 
+
+Definition of low default portfolios (LDPs) & its disadvantages
+
+Low-default portfolios are those of which default data is limited or non-existent compared to the total numbers of obligators. According to the Bank of England suggestion in Prudential Regulation Authority 2013, if a portfolio that contains fewer than 20 defaults in its data set, it is considered to be a low default portfolio. Moreover, besides the quality of default data, this definition also strongly states the impact of the ratio between default cases and non-default ones.
+Low-default portfolio is also described as “imbalance problem” or “imbalanced data”. In this case, risk quantification and validation is in challenge as there is not enough sufficient statistical data. Hence, the credit risk can be substantially underestimated or overestimated. 
+
+
+####2.3.2. Model performance assessment methodology
+It is difficult for LDPs to apply the advanced internal ratings based (IRP) approach like other portfolios. However, on the other hand, the Basel Committee Accord Implementation Group’s Validation Subgroup states that LDPs should still be included in the IRB treatment. To compensate the absence of sufficient data, we could use a set of tools and techniques to facilitate risk assessment. Banks or financial institutions can come up with solutions which are aim to enhance data richness. Those tools are briefly specified as below:
+Use external data sources by exchanging, pooling data with other banks or market participants. 
+
+Combine internal portfolio segments with similar risk characteristics
+Combine different rating categories then analyse PD of such combination.
+Use the upper bound of the PD as an input to formula for RWA if individual PD might be too unreliable.Derive PD estimates under different horizons.
+Use lowest non-default rating as a proxy for default if credit support results in low default rate.
+
+Finally, to assess the model performance, we need to select the right evaluation metrics as it will not provide any valuable information. For instance, other alternative evaluation metrics can be applied such as:
+AUC (area under the curve) helps to compare ROC curves amongst all models. ROC curve give a vision of  relation between true-positive rate and false positive rate. Therefore, banks or financial institutions can use it to decide the best threshold value. Hence, the model having larger AUC classifies the patients better. 
+Precision is true-positive predictive rate while specificity is true-negative rate. This metric is recommended to analyse how many selected instances are relevant to one another.
+Recall/sensitivity is positive predictive rate. They are used if false positives is far better than false negatives. 
+If you have uneven class distribution, F1 score is a harmonic mean of precision and recall.
+
+\pagebreak
+
+# Assignment 3
+
+
+\pagebreak
+
+# Assignment 4
+
+
 
 \pagebreak
 
