@@ -100,7 +100,7 @@ df_corp$default <- as.factor(df_corp$default)
 df_corp %>% 
   ggplot(aes(x = default, fill = default)) +
   geom_bar() +
-  ggtitle("Distribution of the none-default/default") +
+  ggtitle("Distribution of the non-defaulters and defaulters") +
   theme(plot.title = element_text(hjust = 0.5))
 
 ```
@@ -501,7 +501,7 @@ glm_pred <- data.frame(actual = test_data$default,
 glm_pred$predict <- ifelse(glm_pred$Yes > 0.5, "Yes", "No")
 glm_pred$predict <- as.factor(glm_pred$predict)
 
-cm_glm <-confusionMatrix(glm_pred$predict, test_data$default)
+cm_glm <-confusionMatrix(glm_pred$predict, test_data$default, positive=1)
 
 confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM")
 
