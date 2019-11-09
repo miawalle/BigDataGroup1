@@ -457,11 +457,15 @@ model_glm <- train(default ~ .- operating_margin
 
 # To mangage to run the latter codes due to removal of variables in the regression.
 
+saveRDS(model_rf, file = "glm.Rdata")
+
 ```
 
 
 
 ```{r var_imp_GLM, fig.cap="\\label{fig:var_imp_GLM}Variable importance"}
+
+model_glm <- readRDS("glm.Rdata")
 
 # Threshold 0.3
 
