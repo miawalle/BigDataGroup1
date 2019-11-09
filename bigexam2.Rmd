@@ -59,9 +59,9 @@ df_corp <- df
 
 ## Part 1: Inspecting, cleaning and imputing the data set 
 
-In this section, we will train and rund three different prediction models based on a data set containing financial records of a list of companies. In total, there are 24 variables in the data set and xxx observations. Prior to training our prediction models, we load and examine the data set.
+In this section, we will train and rund three different prediction models based on a data set containing financial records of a list of companies. In total, there are 24 variables in the data set and 128070 observations. Prior to training our prediction models, we load and examine the data set.
 
-The first thing we notice is that some variables are classified as numeric when they should be factor variables, and vice versa. We reclassify these variables. 
+The first thing we notice is that some variables are classified as numeric when they should be factor variables, and vice versa. These variables are reclassified. 
 
 
 Table xx displays summary statistics of our data. As shown in the table, the value xx is present in many of the observations. Most likely, these values represent measurement errors or missing variables, and we therefore choose to replace these values with NAs. After completing this step, there are still some quite extreme outliers remaining in the data. Our assessment is that these values do not represent real observations, as they deviate from typical values for the financial key figures represented in the variables in question. Applying a threshold of 2,5 percent at each end of the variables' distribution, we replace values exceeding this threshold with NAs.  
@@ -89,7 +89,7 @@ caption_at_bottom(stargazer(df_corp, summary.stat = c("min","max"),header = FALS
 
 ```
 
-We also notice that the variable default, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
+We also notice that the variable \texit{default}, which will be the dependent variable in our prediction models, is imbalanced. That is, observations of defaulting companies are underrepresented, which will make it difficult to predict defaults. The underrepresentation of defaults is illustrated in figure \ref{fig:imbalance}. we will handle this imbalance when we implement the prediction models in section xx.
 
 ```{r hist, cache=FALSE, fig.cap="\\label{fig:hist}Histogram of the distribution"}
 
@@ -237,19 +237,24 @@ df_corp$total_assets <- remove_outliers_na(df_corp$total_assets)
 df_corp$revenue <- remove_outliers_na(df_corp$revenue)
 df_corp$amount_unpaid_debt <- remove_outliers_na(df_corp$amount_unpaid_debt)
 
+# Defining 0 and 1 as "yes" and "no", respectively: 
+
 df_corp$default <- recode_factor(
   df_corp$default,
   `0` = "No",
   `1` = "Yes")
 
+# We remove "equity ratio stability", as it is appear"
 df_corp <- df_corp %>% 
-  select(-equity_ratio_stability) # Removed due to collinearity and if look at the earlier plots it make sense.
+  select(-equity_ratio_stability) 
+
+#Mia: Meybe we can do this in another chunk?
 
 ```
 After cleaning the data set, we are left with xx missing values. As these account for a substantial fraction of the total number of observations in the data set, we choose to impute these using the MICE package. 
 
 - PMM imputation: Explain this. 
-- Why is this better than replacing NA with mean or meadian. 
+- Why is this better than replacing NA with mean or median. 
 
 An illustration of the imputation added to the appendix.
 
@@ -296,9 +301,6 @@ xtable(rbind(Orginal, Imputed))
 df_cleaned <- complete_imputed
 
 ```
-
-
-
 
 A final step is to make sure all variables are classified correctly. We believe the variables unpaid debt collection and paid debt collection are better measured as categorized variables. This is due to their distribution, that includes many extreme values despite our previous cleaning. These are therefore coded as dummies.
 
@@ -355,26 +357,22 @@ df_cleaned %>%
 
 In this section we will train and rund three different prediction models; a Logistic Regression Model, a Random Forest and a Xgboost Model. 
 
-### Preparations
+### Variable Selection
 
 
-Prior to training our models, need to consider potential correlation between the variables in our dataset. This is done by running a logistic regression and letting R calculate the VIF for the different different independent variables. The variables
- \textit{operating margin} and \textit{xxx} have VIF values of xxx and xxx, respectively, and we therefore choose to leave these out when we train our logistic regression model in section xx.  
+Prior to training our models, we need to consider potential correlation between the variables in our dataset. This is done by running a logistic regression and letting R calculate the VIF for the different different independent variables. As seen in table xx, the variables
+ \textit{operating margin} and \textit{xxxx} have VIF values of xxx and xxx, respectively, and we therefore choose to leave these out when we train our logistic regression model in section xx.  
  
+Furthermore, we believe it makes little sense to compare vairables that are not ratios. For example, a small company will typically have a lower revenue than a large company, 
+- And therefore it will not make sense to compare their equity level without 
+- Explain
 
-```{r}
-
-# For all models we will remove the equity, total_assets, revenue and amount_unpaid_dept because we want to work with relative values.
-
-df_reduced <- df_cleaned %>% 
-  select(-equity, -total_assets, -revenue, -amount_unpaid_debt)
-
-``` 
+We made an attempt to generate ratio values such as debt to equity or revenue over assets. These predictors would be comparable across companies and be well suited as explanatory variables. However, we did not succeed in doing so, as there despite cleaning our data are some quite extreme values in the data set. We therefore remove the variables \textit{equity}, \textit{total assets}, \textit{revenue} and \textit{amount unpaid debt}.
 
 ```{r, include = FALSE, eval= FALSE}
 
 # Last thing we do before we split the data and start modelling is checking for mulitcollinearity.
-# To do this we will be using vic function in the car package.
+# We use vic function in the car package.
 
 library(car)
 
@@ -399,9 +397,21 @@ mc_vif_3 <- vif(glm(default ~ .-operating_margin - paid_debt_collection - liquid
 mc_vif_3
 ```
 
+
 ```{r}
 
-# Split data in to train/test
+# For all models we will remove the equity, total_assets, revenue and amount_unpaid_dept because we want to work with relative values.
+
+df_reduced <- df_cleaned %>% 
+  select(-equity, -total_assets, -revenue, -amount_unpaid_debt)
+
+``` 
+
+We then split the data set into train and test, with 70% of our observations as the training set, and the remaining 30 % as a test set.
+
+```{r}
+
+# Split data into train/test
 
 set.seed(1)
 
@@ -424,6 +434,12 @@ test_data <- df_reduced[-index, ]
 xtable(rbind(`Train defaults`,`Test defaults`))
 
 ```
+
+## Cross Validation
+Working with such a large data set as we have in this assignment allows for learning subtle features of the data. The downside of this is the risk of overfitting our models. A good approach to control for this is to cross validate when we train our models. Here, we do a 10 fold cross validation with 10 repititions. Cross validation is used for all three prediction models. 
+
+## Dealing with data imbalance
+As mentioned in section xx, the predicted defaults are underrepresented in our data set which will make it difficult to accurately predict defaults in our models. A common way to deal with this is to use a sampling tecnique. One could either \textit{undersample} the data, i.e. scale down the number of observations of companies that did not default. Alternatively, one could \textit{oversample} the data - that is, scale up the number of defaulting companies. We have chosen to deploy the oversampling technique \textit{smothe}. Smothe is... (A few more words about smothe here).The oversampling technique is incorporated in each fold in the cross validation. 
 
 ```{r}
 
@@ -501,7 +517,8 @@ glm_pred <- data.frame(actual = test_data$default,
 glm_pred$predict <- ifelse(glm_pred$Yes > 0.5, "Yes", "No")
 glm_pred$predict <- as.factor(glm_pred$predict)
 
-cm_glm <-confusionMatrix(glm_pred$predict, test_data$default, positive=1)
+cm_glm <-confusionMatrix(glm_pred$predict, test_data$default, positive="Yes")
+
 
 confusion_glm <- xtable(as.matrix(cm_glm$table), caption = "Confusion matrix GLM")
 
@@ -553,6 +570,17 @@ Our second predicion model is a random forest model.
 Comments:
 - We have implemented cross validation
 - Fine tuning?
+
+We pick variables we want to tune and let R decide 
+RF: mtry and mean node size.
+mtry: add a vector from 1 to 5 --> 4.
+mean node: 10 and 20. --> 10.
+
+- Explain what this is 
+
+
+
+
 - Oversampling technique is also implemented here. 
 
 
@@ -612,13 +640,6 @@ print(performance_rf, scalebox = 1, caption.placement= "bottom", label = "tab:pe
 
 ```
 
-
-Comments:
-About the confustion matrix
-How well the model performs relative to glm
-Accuracy, specificity and sensitivity etc.
-
-
 ```{r ROC_rf, fig.cap="\\label{fig:ROC_rf}ROC plot for Random Forest"}
 
 # ROC curve rf
@@ -650,7 +671,17 @@ test_rf %>%
 
 # xgBoost
 
-```{r, eval=FALSE, fig.asp=1, fig.width = 14, eval = TRUE}
+Tuning: 
+Since it is time consuming to tune all relevant parameters, we tune some:
+ETA: 0,1 to 0,3
+Gamme: 0 to 0,2
+Max threee dept: 5 to 7
+Number of trees from 200, 250 and 300. 
+
+The results are added to the appendix.
+
+
+```{r, eval=FALSE, fig.asp=1, fig.width = 14, eval = FALSE}
 #Model 3: Xgboost
 
 xgb_grid <- expand.grid(nrounds = 300,
